@@ -93,7 +93,7 @@ func HandleArticleCreate(w http.ResponseWriter, r *http.Request)  {
 
 	json.Unmarshal(reqBody, &newArticle)
 
-	if newArticle.Content == "" || newArticle.Title == "" {
+	if newArticle.Content == "" || newArticle.Title == "" || newArticle.Content == "" || newArticle.FullText == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

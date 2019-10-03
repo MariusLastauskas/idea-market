@@ -46,6 +46,7 @@ func main() {
 
 	// users
 	http.HandleFunc("/users", model.HandleUsersGet)
+	http.HandleFunc("/user", model.HandleUserCreate)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

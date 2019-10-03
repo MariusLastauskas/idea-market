@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -142,4 +143,37 @@ func HandleUsersGet(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
+}
+
+func HandleUserCreate(w http.ResponseWriter, r *http.Request)  {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	var newUser user
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	json.Unmarshal(reqBody, &newUser)
+
+	if newUser.FullName == "" || newUser.Username == "" ||  newUser.Email == "" ||
+		newUser.PasswordHash == "" || newUser.PhotoPath == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	newUser.ID = userIndexer
+	newUser.Role = 0
+	newUser.IsActive = true
+	newUser.Articles = []article{}
+	userIndexer++
+	users = append(users, newUser)
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(newUser)
 }
