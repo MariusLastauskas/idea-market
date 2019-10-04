@@ -6,12 +6,36 @@ import (
 	"strings"
 )
 
-func GetIdFromUrl(url string) (int, error)  {
+func GetIdFromUrl(url string) (int, error) {
 	parts := strings.Split(url, "/")
 	if parts[2] == "" {
 		return -1, nil
 	}
 	return strconv.Atoi(parts[2])
+}
+
+func getSubIdFromSubpath(url string) (int, error) {
+	parts := strings.Split(url, "/")
+	if len(parts) < 2 {
+		return -1, nil
+	}
+	if parts[1] == "" {
+		return -1, nil
+	}
+	return strconv.Atoi(parts[1])
+}
+
+func getSubroute(url string) (string, bool) {
+	parts := strings.Split(url, "/")
+	if len(parts) <= 3 {
+		return "", false
+	}
+
+	if len(parts) == 4 {
+		return parts[3], true
+	}
+
+	return  parts[3] + "/" + parts[4], true
 }
 
 func AuthoriseByPassHash(passHash string) (string, bool) {

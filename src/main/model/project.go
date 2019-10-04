@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type project struct {
@@ -143,14 +144,36 @@ func HandleProjectCreate(w http.ResponseWriter, r *http.Request)  {
 
 func HandleProjectRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
+	subpath, isSubpath := getSubroute(r.RequestURI)
 
 	switch r.Method {
 	case "GET":
-		p, status := projectGet(r)
-		w.WriteHeader(status)
+		if isSubpath {
+			id, err := getSubIdFromSubpath(subpath)
+			if subpath == "donations" {
+				d, status := getProjectDonations(r, -1)
+				w.WriteHeader(status)
 
-		if status == http.StatusOK {
-			json.NewEncoder(w).Encode(p)
+				if status == http.StatusOK {
+					json.NewEncoder(w).Encode(d)
+				}
+			} else if err == nil && id > -1 {
+				d, status := getProjectDonations(r, id)
+				w.WriteHeader(status)
+
+				if status == http.StatusOK {
+					json.NewEncoder(w).Encode(d)
+				}
+			} else {
+				w.WriteHeader(http.StatusBadRequest)
+			}
+		} else {
+			p, status := projectGet(r)
+			w.WriteHeader(status)
+
+			if status == http.StatusOK {
+				json.NewEncoder(w).Encode(p)
+			}
 		}
 	case "DELETE":
 		p, status := projectDelete(r)
@@ -190,6 +213,40 @@ func projectGet(r *http.Request) (project, int) {
 	}
 
 	return project{}, http.StatusNotFound
+}
+
+func getProjectDonations(r *http.Request, d_id int) (donationsList, int) {
+	p_id, err := GetIdFromUrl(r.RequestURI)
+	isAuthenticated, user := AuthoriseByToken(r)
+	resultDonations := donationsList{}
+	parts := strings.Split(r.RequestURI, "/")
+
+	if err != nil || p_id == -1 {
+		return donationsList{}, http.StatusBadRequest
+	}
+
+	if parts[3] != "donations" && parts[3] != "donation" || parts[3] != "donations" && d_id < 0 || parts[3] != "donation" && d_id > -1 {
+		return donationsList{}, http.StatusNotFound
+	}
+
+	for _, p := range projects {
+		if p.ID == p_id {
+			if p.IsPublic || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 {
+				for _, d :=range donations {
+					if d.Project == p_id && d_id == -1 || d.Project == p_id && d_id == d.ID{
+						resultDonations = append(resultDonations, d)
+					}
+				}
+				if len(resultDonations) == 0 {
+					return donationsList{}, http.StatusNotFound
+				}
+				return resultDonations, http.StatusOK
+			}
+
+			return donationsList{}, http.StatusForbidden
+		}
+	}
+	return donationsList{}, http.StatusNotFound
 }
 
 func projectDelete(r *http.Request) (project, int) {
