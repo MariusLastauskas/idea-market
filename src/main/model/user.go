@@ -139,6 +139,11 @@ var users = userList{
 
 var userIndexer = 5
 
+func authoriseUserBehaviour(r *http.Request, id int) bool {
+	isAuthenticated, u := AuthoriseByToken(r)
+	return u.Role == 1 || isAuthenticated && u.ID == id && u.IsActive
+}
+
 func HandleUsersGet(w http.ResponseWriter, r *http.Request) {
 
 	isAuthenticated, u := AuthoriseByToken(r)
@@ -229,7 +234,7 @@ func userGet(r *http.Request) (user, int) {
 		return user{}, http.StatusBadRequest
 	}
 
-	if AuthoriseBehaviour(r, id) {
+	if authoriseUserBehaviour(r, id) {
 		for _, u := range users {
 			if u.ID == id {
 				return u, http.StatusOK
@@ -249,7 +254,7 @@ func userDelete(r *http.Request) (user, int) {
 		return user{}, http.StatusBadRequest
 	}
 
-	if AuthoriseBehaviour(r, id) {
+	if authoriseUserBehaviour(r, id) {
 		for i, u := range users {
 			if u.ID == id {
 				users = append(users[:i], users[i+1:]...)
@@ -269,7 +274,7 @@ func userUpdate(r *http.Request) (user, int) {
 		return user{}, http.StatusBadRequest
 	}
 
-	if AuthoriseBehaviour(r, id) {
+	if authoriseUserBehaviour(r, id) {
 		var updateUser user
 		reqBody, err := ioutil.ReadAll(r.Body)
 		if err != nil {

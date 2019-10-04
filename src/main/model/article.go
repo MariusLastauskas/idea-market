@@ -66,13 +66,44 @@ var articles = articleList{
 
 var articlesIndexer = 4
 
+func authoriseArticleBehaviour(r *http.Request, id int) (bool, user) {
+	for _, a := range articles {
+		if a.ID == id && a.IsPublic {
+			return true, user{}
+		}
+	}
+
+	isAuthenticated, u := AuthoriseByToken(r)
+	if isAuthenticated && u.Role == 1 {
+		return true, u
+	}
+
+	if isAuthenticated {
+		for _, a := range u.Articles {
+			if a.ID == id {
+				return true, u
+			}
+		}
+	}
+	return false, user{}
+}
+
 func HandleArticlesGet(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
+		resultArticles := articleList{}
+
 		w.Header().Add("Content-Type", "application/json")
 
 		w.WriteHeader(http.StatusOK)
 
-		json.NewEncoder(w).Encode(articles)
+		for _, a := range articles {
+			isAuthorised, _ := authoriseArticleBehaviour(r, a.ID)
+			if isAuthorised {
+				resultArticles = append(resultArticles, a)
+			}
+		}
+
+		json.NewEncoder(w).Encode(resultArticles)
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -84,27 +115,33 @@ func HandleArticleCreate(w http.ResponseWriter, r *http.Request)  {
 		return
 	}
 
-	var newArticle article
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	isAuthenticated, user := AuthoriseByToken(r)
+
+	if isAuthenticated && user.Role == 1 {
+		var newArticle article
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		json.Unmarshal(reqBody, &newArticle)
+
+		if newArticle.Title == "" || newArticle.Content == "" || newArticle.FullText == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		newArticle.ID = articlesIndexer
+		articlesIndexer++
+		articles = append(articles, newArticle)
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+
+		json.NewEncoder(w).Encode(newArticle)
+	} else {
+		w.WriteHeader(http.StatusForbidden)
 	}
-
-	json.Unmarshal(reqBody, &newArticle)
-
-	if newArticle.Content == "" || newArticle.Title == "" || newArticle.Content == "" || newArticle.FullText == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	newArticle.ID = articlesIndexer
-	articlesIndexer++
-	articles = append(articles, newArticle)
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	json.NewEncoder(w).Encode(newArticle)
 }
 
 func HandleArticleRequest(w http.ResponseWriter, r *http.Request) {
@@ -146,7 +183,14 @@ func articleGet(r *http.Request) (article, int) {
 
 	for _, a := range articles {
 		if a.ID == id {
-			return a, http.StatusOK
+			if a.IsPublic {
+				return a, http.StatusOK
+			}
+			isAuthorised, u := AuthoriseByToken(r)
+			if isAuthorised && u.Role == 1 {
+				return a, http.StatusOK
+			}
+			return article{}, http.StatusForbidden
 		}
 	}
 
@@ -160,14 +204,19 @@ func articleDelete(r *http.Request) (article, int) {
 		return article{}, http.StatusBadRequest
 	}
 
-	for i, a := range articles {
-		if a.ID == id {
-			articles = append(articles[:i], articles[i + 1:]...)
-			return a, http.StatusNoContent
+	isAuthorised, u := AuthoriseByToken(r)
+	if isAuthorised && u.Role == 1 {
+		for i, a := range articles {
+			if a.ID == id {
+				articles = append(articles[:i], articles[i+1:]...)
+				return a, http.StatusNoContent
+			}
 		}
+
+		return article{ID: -1}, http.StatusNotFound
 	}
 
-	return article{ID: -1}, http.StatusNotFound
+	return article{}, http.StatusForbidden
 }
 
 func articleUpdate(r *http.Request) (article, int) {
@@ -177,23 +226,35 @@ func articleUpdate(r *http.Request) (article, int) {
 		return article{}, http.StatusBadRequest
 	}
 
-	var updateArticle article
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return article{}, http.StatusNotModified
-	}
-	json.Unmarshal(reqBody, &updateArticle)
-
-	for i, a := range articles {
-		if a.ID == id {
-			a.Title = updateArticle.Title
-			a.Content = updateArticle.Content
-			remArticles := articles[i + 1:]
-			articles = append(articles[:i], a)
-			articles = append(articles, remArticles...)
-			return a, http.StatusOK
+	isAuthorised, u := AuthoriseByToken(r)
+	if isAuthorised && u.Role == 1 {
+		var updateArticle article
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return article{}, http.StatusBadRequest
 		}
+		json.Unmarshal(reqBody, &updateArticle)
+
+		if updateArticle.Title != "" && updateArticle.Content != "" &&
+			updateArticle.FullText != "" {
+			for i, a := range articles {
+				if a.ID == id {
+					a.Title = updateArticle.Title
+					a.Content = updateArticle.Content
+					a.FullText = updateArticle.FullText
+					a.IsPublic = updateArticle.IsPublic
+					remArticles := articles[i+1:]
+					articles = append(articles[:i], a)
+					articles = append(articles, remArticles...)
+					return a, http.StatusOK
+				}
+			}
+
+			return article{ID: -1}, http.StatusNotFound
+		}
+
+		return article{}, http.StatusBadRequest
 	}
 
-	return article{ID: -1}, http.StatusNotFound
+	return article{}, http.StatusForbidden
 }

@@ -49,11 +49,6 @@ func AuthoriseByToken(r *http.Request) (bool, user)  {
 	return false, user{}
 }
 
-func AuthoriseBehaviour(r *http.Request, id int) bool {
-	isAuthenticated, u := AuthoriseByToken(r)
-	return u.Role == 1 || isAuthenticated && u.ID == id && u.IsActive
-}
-
 func HandleBadPath(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
