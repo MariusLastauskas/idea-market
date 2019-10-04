@@ -121,15 +121,29 @@ var users = userList{
 			},
 		},
 	},
+	{
+		ID: 5,
+		FullName: "Jonas Jonaitis",
+		Username: "JJ",
+		Email: "jonas.jonaitis@gmail.com",
+		PasswordHash: "65d64as8--user5PassHash--456dsda45ds",
+		PhotoPath: "/userPhoto/5",
+		Role: 0,
+		IsActive: true,
+
+		Articles: articleList {
+
+		},
+	},
 }
 
 var userIndexer = 5
 
 func HandleUsersGet(w http.ResponseWriter, r *http.Request) {
 
-	isAuthenticated, role := AuthoriseByToken(r)
+	isAuthenticated, u := AuthoriseByToken(r)
 
-	if !isAuthenticated || role != 1 {
+	if !isAuthenticated || u.Role != 1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -176,4 +190,111 @@ func HandleUserCreate(w http.ResponseWriter, r *http.Request)  {
 	w.WriteHeader(http.StatusCreated)
 
 	json.NewEncoder(w).Encode(newUser)
+}
+
+func HandleUserRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
+	switch r.Method {
+	case "GET":
+		u, status := userGet(r)
+		w.WriteHeader(status)
+
+		if status == http.StatusOK {
+			json.NewEncoder(w).Encode(u)
+		}
+	case "DELETE":
+		u, status := userDelete(r)
+		w.WriteHeader(status)
+
+		if status == http.StatusNoContent {
+			json.NewEncoder(w).Encode(u)
+		}
+	case "PUT":
+		u, status := userUpdate(r)
+		w.WriteHeader(status)
+
+		if status == http.StatusOK {
+			json.NewEncoder(w).Encode(u)
+		}
+	case "POST":
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func userGet(r *http.Request) (user, int) {
+	id, err := GetIdFromUrl(r.RequestURI)
+
+	if err != nil || id == -1 {
+		return user{}, http.StatusBadRequest
+	}
+
+	if AuthoriseBehaviour(r, id) {
+		for _, u := range users {
+			if u.ID == id {
+				return u, http.StatusOK
+			}
+		}
+
+		return user{}, http.StatusNotFound
+	}
+
+	return user{}, http.StatusForbidden
+}
+
+func userDelete(r *http.Request) (user, int) {
+	id, err := GetIdFromUrl(r.RequestURI)
+
+	if err != nil || id == -1 {
+		return user{}, http.StatusBadRequest
+	}
+
+	if AuthoriseBehaviour(r, id) {
+		for i, u := range users {
+			if u.ID == id {
+				users = append(users[:i], users[i+1:]...)
+				return u, http.StatusNoContent
+			}
+		}
+		return user{}, http.StatusNotFound
+	}
+
+	return user{}, http.StatusForbidden
+}
+
+func userUpdate(r *http.Request) (user, int) {
+	id, err := GetIdFromUrl(r.RequestURI)
+
+	if err != nil || id == -1 {
+		return user{}, http.StatusBadRequest
+	}
+
+	if AuthoriseBehaviour(r, id) {
+		var updateUser user
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return user{}, http.StatusNotModified
+		}
+		json.Unmarshal(reqBody, &updateUser)
+
+		for i, u := range users {
+			if u.ID == id {
+				u.FullName = updateUser.FullName
+				u.Username = updateUser.Username
+				u.Email = updateUser.Email
+				u.PasswordHash = updateUser.PasswordHash
+				u.PhotoPath = updateUser.PhotoPath
+				u.Role = updateUser.Role
+				u.IsActive = updateUser.IsActive
+				remUsers := users[i+1:]
+				users = append(users[:i], u)
+				users = append(users, remUsers...)
+				return u, http.StatusOK
+			}
+		}
+
+		return user{}, http.StatusNotFound
+	}
+
+	return user{}, http.StatusForbidden
 }
