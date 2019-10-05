@@ -74,8 +74,6 @@ func HandleDonationCreate(w http.ResponseWriter, r *http.Request)  {
 
 		json.Unmarshal(reqBody, &newDonation)
 		newDonation.Donor = user.ID
-		newDonation.ID = donationsIndexer
-		projectIndexer++
 
 		if newDonation.Size <= 0 || newDonation.Project < 1 {
 			w.WriteHeader(http.StatusBadRequest)
@@ -86,7 +84,9 @@ func HandleDonationCreate(w http.ResponseWriter, r *http.Request)  {
 			if p.ID == newDonation.Project {
 				w.Header().Add("Content-Type", "application/json")
 				donations = append(donations, newDonation)
-				w.WriteHeader(http.StatusOK)
+				newDonation.ID = donationsIndexer
+				projectIndexer++
+				w.WriteHeader(http.StatusCreated)
 				return
 			}
 		}

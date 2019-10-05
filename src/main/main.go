@@ -26,8 +26,10 @@ func main() {
 	http.HandleFunc("/project/", model.HandleProjectRequest)
 
 	// donations
-	http.HandleFunc("/donations", model.HandleDonationsGet)
 	http.HandleFunc("/donation", model.HandleDonationCreate)
+
+	// review
+	http.HandleFunc("/review", model.HandleReviewCreate)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

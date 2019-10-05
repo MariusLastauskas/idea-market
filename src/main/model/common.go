@@ -14,15 +14,15 @@ func GetIdFromUrl(url string) (int, error) {
 	return strconv.Atoi(parts[2])
 }
 
-func getSubIdFromSubpath(url string) (int, error) {
+func getSubIdFromURI(url string) (int, error) {
 	parts := strings.Split(url, "/")
-	if len(parts) < 2 {
+	if len(parts) < 5 {
 		return -1, nil
 	}
-	if parts[1] == "" {
+	if parts[4] == "" {
 		return -1, nil
 	}
-	return strconv.Atoi(parts[1])
+	return strconv.Atoi(parts[4])
 }
 
 func getSubroute(url string) (string, bool) {
@@ -31,11 +31,7 @@ func getSubroute(url string) (string, bool) {
 		return "", false
 	}
 
-	if len(parts) == 4 {
-		return parts[3], true
-	}
-
-	return  parts[3] + "/" + parts[4], true
+	return parts[3], true
 }
 
 func AuthoriseByPassHash(passHash string) (string, bool) {

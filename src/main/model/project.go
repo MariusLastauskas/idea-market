@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 type project struct {
@@ -149,23 +148,54 @@ func HandleProjectRequest(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		if isSubpath {
-			id, err := getSubIdFromSubpath(subpath)
-			if subpath == "donations" {
-				d, status := getProjectDonations(r, -1)
+			id, _ := getSubIdFromURI(r.RequestURI)
+
+			switch subpath {
+			case "donations":
+				if id != -1 {
+					w.WriteHeader(http.StatusNotFound)
+					return
+				}
+
+				d, status := getProjectDonations(r, subpath, -1)
 				w.WriteHeader(status)
 
 				if status == http.StatusOK {
 					json.NewEncoder(w).Encode(d)
 				}
-			} else if err == nil && id > -1 {
-				d, status := getProjectDonations(r, id)
+				return
+			case "donation":
+				d, status := getProjectDonations(r, subpath, id)
 				w.WriteHeader(status)
 
 				if status == http.StatusOK {
 					json.NewEncoder(w).Encode(d)
 				}
-			} else {
-				w.WriteHeader(http.StatusBadRequest)
+				return
+			case "reviews":
+				if id != -1 {
+					w.WriteHeader(http.StatusNotFound)
+					return
+				}
+
+				rev, status := getProjectReviews(r, subpath, -1)
+				w.WriteHeader(status)
+
+				if status == http.StatusOK {
+					json.NewEncoder(w).Encode(rev)
+				}
+				return
+			case "review":
+				rev, status := getProjectReviews(r, subpath, id)
+				w.WriteHeader(status)
+
+				if status == http.StatusOK {
+					json.NewEncoder(w).Encode(rev)
+				}
+				return
+			default:
+				w.WriteHeader(http.StatusNotFound)
+				return
 			}
 		} else {
 			p, status := projectGet(r)
@@ -215,17 +245,16 @@ func projectGet(r *http.Request) (project, int) {
 	return project{}, http.StatusNotFound
 }
 
-func getProjectDonations(r *http.Request, d_id int) (donationsList, int) {
+func getProjectDonations(r *http.Request, subpath string, d_id int) (donationsList, int) {
 	p_id, err := GetIdFromUrl(r.RequestURI)
 	isAuthenticated, user := AuthoriseByToken(r)
 	resultDonations := donationsList{}
-	parts := strings.Split(r.RequestURI, "/")
 
 	if err != nil || p_id == -1 {
 		return donationsList{}, http.StatusBadRequest
 	}
 
-	if parts[3] != "donations" && parts[3] != "donation" || parts[3] != "donations" && d_id < 0 || parts[3] != "donation" && d_id > -1 {
+	if subpath != "donations" && subpath != "donation" || subpath != "donations" && d_id < 0 || subpath != "donation" && d_id > -1 {
 		return donationsList{}, http.StatusNotFound
 	}
 
@@ -247,6 +276,39 @@ func getProjectDonations(r *http.Request, d_id int) (donationsList, int) {
 		}
 	}
 	return donationsList{}, http.StatusNotFound
+}
+
+func getProjectReviews(r *http.Request, subpath string, d_id int) (reviewList, int) {
+	p_id, err := GetIdFromUrl(r.RequestURI)
+	isAuthenticated, user := AuthoriseByToken(r)
+	resultReviews := reviewList{}
+
+	if err != nil || p_id == -1 {
+		return reviewList{}, http.StatusBadRequest
+	}
+
+	if subpath != "reviews" && subpath != "review" || subpath != "reviews" && d_id < 0 || subpath != "review" && d_id > -1 {
+		return reviewList{}, http.StatusNotFound
+	}
+
+	for _, p := range projects {
+		if p.ID == p_id {
+			if p.IsPublic || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 {
+				for _, rev :=range reviews {
+					if rev.Project == p_id && d_id == -1 || rev.Project == p_id && d_id == rev.ID{
+						resultReviews = append(resultReviews, rev)
+					}
+				}
+				if len(resultReviews) == 0 {
+					return reviewList{}, http.StatusNotFound
+				}
+				return resultReviews, http.StatusOK
+			}
+
+			return reviewList{}, http.StatusForbidden
+		}
+	}
+	return reviewList{}, http.StatusNotFound
 }
 
 func projectDelete(r *http.Request) (project, int) {
