@@ -31,5 +31,8 @@ func main() {
 	// review
 	http.HandleFunc("/review", model.HandleReviewCreate)
 
+	// resources
+	http.HandleFunc("/resource", model.HandleResourceCreate)
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

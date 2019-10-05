@@ -72,3 +72,12 @@ func AuthoriseByToken(r *http.Request) (bool, user)  {
 func HandleBadPath(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
+
+func contains(arr []int, el int) bool {
+	for _, e := range arr {
+		if e == el {
+			return true
+		}
+	}
+	return false
+}

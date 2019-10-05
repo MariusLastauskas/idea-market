@@ -38,7 +38,7 @@ var projects = projectList{
 		IsPublic: true,
 		Price: 99.99,
 		Multiplicity: 5,
-		Owner: 1,
+		Owner: 3,
 		Buyers: []int{2, 3},
 	},
 	{
@@ -193,6 +193,27 @@ func HandleProjectRequest(w http.ResponseWriter, r *http.Request) {
 					json.NewEncoder(w).Encode(rev)
 				}
 				return
+			case "resources":
+				if id != -1 {
+					w.WriteHeader(http.StatusNotFound)
+					return
+				}
+
+				res, status := getProjectResources(r, subpath, -1)
+				w.WriteHeader(status)
+
+				if status == http.StatusOK {
+					json.NewEncoder(w).Encode(res)
+				}
+				return
+			case "resource":
+				res, status := getProjectResources(r, subpath, id)
+				w.WriteHeader(status)
+
+				if status == http.StatusOK {
+					json.NewEncoder(w).Encode(res)
+				}
+				return
 			default:
 				w.WriteHeader(http.StatusNotFound)
 				return
@@ -206,11 +227,25 @@ func HandleProjectRequest(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	case "DELETE":
-		p, status := projectDelete(r)
-		w.WriteHeader(status)
+		if isSubpath {
+			id, _ := getSubIdFromURI(r.RequestURI)
 
-		if status == http.StatusNoContent {
-			json.NewEncoder(w).Encode(p)
+			switch subpath {
+			case "resource":
+				if id > -1 {
+					status := deleteProjectResources(r, subpath, id)
+					w.WriteHeader(status)
+				}
+			default:
+				w.WriteHeader(http.StatusNotFound)
+			}
+		} else {
+			p, status := projectDelete(r)
+			w.WriteHeader(status)
+
+			if status == http.StatusNoContent {
+				json.NewEncoder(w).Encode(p)
+			}
 		}
 	case "PUT":
 		p, status := projectUpdate(r)
@@ -309,6 +344,69 @@ func getProjectReviews(r *http.Request, subpath string, d_id int) (reviewList, i
 		}
 	}
 	return reviewList{}, http.StatusNotFound
+}
+
+func getProjectResources(r *http.Request, subpath string, d_id int) (resourceList, int) {
+	p_id, err := GetIdFromUrl(r.RequestURI)
+	isAuthenticated, user := AuthoriseByToken(r)
+	resultResources := resourceList{}
+
+	if err != nil || p_id == -1 {
+		return resourceList{}, http.StatusBadRequest
+	}
+
+	if subpath != "resources" && subpath != "resource" || subpath != "resources" && d_id < 0 || subpath != "resource" && d_id > -1 {
+		return resourceList{}, http.StatusNotFound
+	}
+
+	for _, p := range projects {
+		if p.ID == p_id {
+			if p.IsPublic && p.Price == 0 || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 || contains(user.BoughtProjects, p.ID) {
+				for _, res := range resources {
+					if res.Project == p_id && d_id == -1 || res.Project == p_id && d_id == res.ID{
+						resultResources = append(resultResources, res)
+					}
+				}
+				if len(resultResources) == 0 {
+					return resourceList{}, http.StatusNotFound
+				}
+				return resultResources, http.StatusOK
+			}
+
+			return resourceList{}, http.StatusForbidden
+		}
+	}
+	return resourceList{}, http.StatusNotFound
+}
+
+func deleteProjectResources(r *http.Request, subpath string, r_id int) int {
+	p_id, err := GetIdFromUrl(r.RequestURI)
+	isAuthenticated, user := AuthoriseByToken(r)
+
+	if err != nil || p_id == -1 {
+		return http.StatusBadRequest
+	}
+
+	if subpath != "resource" || r_id < 0 {
+		return http.StatusNotFound
+	}
+
+	for _, p := range projects {
+		if p.ID == p_id {
+			if isAuthenticated && p.Owner == user.ID {
+				for i, res := range resources {
+					if res.Project == p_id && res.ID == r_id {
+						resources = append(resources[:i], resources[i+1:]...)
+						return http.StatusNoContent
+					}
+				}
+				return http.StatusNotFound
+			}
+
+			return http.StatusForbidden
+		}
+	}
+	return http.StatusNotFound
 }
 
 func projectDelete(r *http.Request) (project, int) {

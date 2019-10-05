@@ -17,6 +17,7 @@ type user struct {
 	IsActive bool `json:"is_active"`
 
 	Articles articleList `json:"articles"`
+	BoughtProjects []int `json:"bought_projects"`
 }
 
 type userList []user
@@ -35,6 +36,7 @@ var users = userList{
 		Articles: articleList {
 
 		},
+		BoughtProjects: []int{3},
 	},
 	{
 		ID: 2,
