@@ -361,7 +361,7 @@ func getProjectResources(r *http.Request, subpath string, d_id int) (resourceLis
 
 	for _, p := range projects {
 		if p.ID == p_id {
-			if p.IsPublic && p.Price == 0 || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 || contains(user.BoughtProjects, p.ID) {
+			if p.IsPublic && p.Price == 0 || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 /*|| contains(user.OwnedProjects, p.ID)*/ {
 				for _, res := range resources {
 					if res.Project == p_id && d_id == -1 || res.Project == p_id && d_id == res.ID{
 						resultResources = append(resultResources, res)

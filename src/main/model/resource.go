@@ -72,6 +72,8 @@ func HandleResourceCreate(w http.ResponseWriter, r *http.Request)  {
 					newResource.ID = resourcesIndexer
 					resourcesIndexer++
 					w.WriteHeader(http.StatusCreated)
+					json.NewEncoder(w).Encode(newResource)
+
 					return
 				}
 				w.WriteHeader(http.StatusForbidden)

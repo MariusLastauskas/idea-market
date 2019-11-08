@@ -10,6 +10,9 @@ func main() {
 	// 404
 	http.HandleFunc("/", model.HandleBadPath)
 
+	// login
+	http.HandleFunc("/login", model.HandleLogin)
+
 	// articles
 	http.HandleFunc("/articles", model.HandleArticlesGet)
 	http.HandleFunc("/article", model.HandleArticleCreate)

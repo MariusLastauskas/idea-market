@@ -64,9 +64,9 @@ func HandleReviewCreate(w http.ResponseWriter, r *http.Request)  {
 		for _, p := range projects {
 			if p.ID == newReview.Project {
 				w.Header().Add("Content-Type", "application/json")
-				reviews = append(reviews, newReview)
 				newReview.ID = reviewIndexer
 				reviewIndexer++
+				reviews = append(reviews, newReview)
 				w.WriteHeader(http.StatusCreated)
 				json.NewEncoder(w).Encode(newReview);
 				return

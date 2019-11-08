@@ -87,6 +87,8 @@ func HandleDonationCreate(w http.ResponseWriter, r *http.Request)  {
 				newDonation.ID = donationsIndexer
 				projectIndexer++
 				w.WriteHeader(http.StatusCreated)
+
+				json.NewEncoder(w).Encode(newDonation)
 				return
 			}
 		}
