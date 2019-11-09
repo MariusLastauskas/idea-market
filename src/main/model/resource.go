@@ -1,9 +1,12 @@
 package model
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"strconv"
 )
 
 type resource struct {
@@ -15,40 +18,13 @@ type resource struct {
 
 type resourceList []resource
 
-var resources = resourceList{
-	{
-		ID: 1,
-		Name: "UML ER",
-		FilePath: "/res/12dasds4",
-		Project: 1,
-	},{
-		ID: 2,
-		Name: "Design",
-		FilePath: "/res/12dasds4dsa",
-		Project: 1,
-	},{
-		ID: 3,
-		Name: "UML ER",
-		FilePath: "/res/12asddasds4",
-		Project: 3,
-	},{
-		ID: 4,
-		Name: "UML ER",
-		FilePath: "/res/12asddasds4",
-		Project: 4,
-	},
-}
-
-var resourcesIndexer = 4
-
 func HandleResourceCreate(w http.ResponseWriter, r *http.Request)  {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	//isAuthenticated, user := AuthoriseByToken(r)
-	isAuthenticated, _ := AuthoriseByToken(r)
+	isAuthenticated, user := AuthoriseByToken(r)
 
 	if isAuthenticated {
 		var newResource resource
@@ -65,24 +41,85 @@ func HandleResourceCreate(w http.ResponseWriter, r *http.Request)  {
 			return
 		}
 
-		//for _, p := range projects {
-		//	if p.ID == newResource.Project {
-		//		if p.Owner == user.ID {
-		//			w.Header().Add("Content-Type", "application/json")
-		//			resources = append(resources, newResource)
-		//			newResource.ID = resourcesIndexer
-		//			resourcesIndexer++
-		//			w.WriteHeader(http.StatusCreated)
-		//			json.NewEncoder(w).Encode(newResource)
-		//
-		//			return
-		//		}
-		//		w.WriteHeader(http.StatusForbidden)
-		//		return
-		//	}
-		//}
-		w.WriteHeader(http.StatusNotFound)
+		p := getProjectsList("select * from project where id_project=" + strconv.Itoa(newResource.Project))
+
+		if len(p) == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if p[0].Owner.ID == user.ID {
+			w.Header().Add("Content-Type", "application/json")
+
+			db, err := sql.Open("mysql", "root:@/saitynai")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer db.Close()
+
+			resourceIdRows, err := db.Query("SELECT id_Resource from resource ORDER BY id_Resource DESC LIMIT 1")
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			for resourceIdRows.Next() {
+				err = resourceIdRows.Scan(&newResource.ID)
+				if err != nil {
+					log.Fatal(err)
+				}
+				newResource.ID++
+
+				db.Query("INSERT INTO resource (`name`, file_path, id_Resource, fk_project) VALUES (?, ?, ?, ?)", newResource.Name, newResource.FilePath, newResource.ID, newResource.Project)
+
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(http.StatusCreated)
+
+				json.NewEncoder(w).Encode(newResource)
+			}
+
+			return
+		}
+		w.WriteHeader(http.StatusForbidden)
+		return
 	} else {
 		w.WriteHeader(http.StatusForbidden)
 	}
+}
+
+func getResourcesList(s string) resourceList {
+	var (
+		id_Resource int
+		name string
+		file_path string
+		fk_project int
+	)
+
+	db, err := sql.Open("mysql", "root:@/saitynai")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var resources = resourceList{}
+	var r = resource{}
+	for rows.Next() {
+		err := rows.Scan(&name, &file_path, &id_Resource, &fk_project)
+		if err != nil {
+			log.Fatal(err)
+		}
+		r = resource{
+			ID: id_Resource,
+			Name: name,
+			FilePath: file_path,
+			Project: fk_project,
+		}
+		resources = append(resources, r)
+	}
+	return resources
 }

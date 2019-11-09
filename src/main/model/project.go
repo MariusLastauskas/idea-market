@@ -167,14 +167,14 @@ func HandleProjectCreate(w http.ResponseWriter, r *http.Request)  {
 
 func HandleProjectRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-	//subpath, isSubpath := getSubroute(r.RequestURI)
+	subpath, isSubpath := getSubroute(r.RequestURI)
 
 	switch r.Method {
 	case "GET":
-		//if isSubpath {
-			//id, _ := getSubIdFromURI(r.RequestURI)
+		if isSubpath {
+			id, _ := getSubIdFromURI(r.RequestURI)
 
-			//switch subpath {
+			switch subpath {
 			//	case "donations":
 			//		if id != -1 {
 			//			w.WriteHeader(http.StatusNotFound)
@@ -217,60 +217,60 @@ func HandleProjectRequest(w http.ResponseWriter, r *http.Request) {
 			//			json.NewEncoder(w).Encode(rev)
 			//		}
 			//		return
-			//	case "resources":
-			//		if id != -1 {
-			//			w.WriteHeader(http.StatusNotFound)
-			//			return
-			//		}
-			//
-			//		res, status := getProjectResources(r, subpath, -1)
-			//		w.WriteHeader(status)
-			//
-			//		if status == http.StatusOK {
-			//			json.NewEncoder(w).Encode(res)
-			//		}
-			//		return
-			//	case "resource":
-			//		res, status := getProjectResources(r, subpath, id)
-			//		w.WriteHeader(status)
-			//
-			//		if status == http.StatusOK {
-			//			json.NewEncoder(w).Encode(res)
-			//		}
-			//		return
-			//	default:
-			//		w.WriteHeader(http.StatusNotFound)
-			//		return
-			//}
-		//} else {
+				case "resources":
+					if id != -1 {
+						w.WriteHeader(http.StatusNotFound)
+						return
+					}
+
+					res, status := getProjectResources(r, subpath, -1)
+					w.WriteHeader(status)
+
+					if status == http.StatusOK {
+						json.NewEncoder(w).Encode(res)
+					}
+					return
+				case "resource":
+					res, status := getProjectResources(r, subpath, id)
+					w.WriteHeader(status)
+
+					if status == http.StatusOK {
+						json.NewEncoder(w).Encode(res)
+					}
+					return
+				default:
+					w.WriteHeader(http.StatusNotFound)
+					return
+			}
+		} else {
 			p, status := projectGet(r)
 			w.WriteHeader(status)
 
 			if status == http.StatusOK {
 				json.NewEncoder(w).Encode(p)
 			}
-		//}
+		}
 	case "DELETE":
-		//if isSubpath {
-			//id, _ := getSubIdFromURI(r.RequestURI)
-			//
-			//switch subpath {
-			//case "resource":
-			//	if id > -1 {
-			//		status := deleteProjectResources(r, subpath, id)
-			//		w.WriteHeader(status)
-			//	}
-			//default:
-			//	w.WriteHeader(http.StatusNotFound)
-			//}
-		//} else {
+		if isSubpath {
+			id, _ := getSubIdFromURI(r.RequestURI)
+
+			switch subpath {
+			case "resource":
+				if id > -1 {
+					status := deleteProjectResources(r, subpath, id)
+					w.WriteHeader(status)
+				}
+			default:
+				w.WriteHeader(http.StatusNotFound)
+			}
+		} else {
 			p, status := projectDelete(r)
 			w.WriteHeader(status)
 
 			if status == http.StatusNoContent {
 				json.NewEncoder(w).Encode(p)
 			}
-		//}
+		}
 	case "PUT":
 		p, status := projectUpdate(r)
 		w.WriteHeader(status)
@@ -388,68 +388,123 @@ func projectGet(r *http.Request) (project, int) {
 //	return reviewList{}, http.StatusNotFound
 //}
 //
-//func getProjectResources(r *http.Request, subpath string, d_id int) (resourceList, int) {
-//	p_id, err := GetIdFromUrl(r.RequestURI)
-//	isAuthenticated, user := AuthoriseByToken(r)
-//	resultResources := resourceList{}
-//
-//	if err != nil || p_id == -1 {
-//		return resourceList{}, http.StatusBadRequest
-//	}
-//
-//	if subpath != "resources" && subpath != "resource" || subpath != "resources" && d_id < 0 || subpath != "resource" && d_id > -1 {
-//		return resourceList{}, http.StatusNotFound
-//	}
-//
-//	for _, p := range projects {
-//		if p.ID == p_id {
-//			if p.IsPublic && p.Price == 0 || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 /*|| contains(user.OwnedProjects, p.ID)*/ {
-//				for _, res := range resources {
-//					if res.Project == p_id && d_id == -1 || res.Project == p_id && d_id == res.ID{
-//						resultResources = append(resultResources, res)
-//					}
-//				}
-//				if len(resultResources) == 0 {
-//					return resourceList{}, http.StatusNotFound
-//				}
-//				return resultResources, http.StatusOK
-//			}
-//
-//			return resourceList{}, http.StatusForbidden
-//		}
-//	}
-//	return resourceList{}, http.StatusNotFound
-//}
+func getProjectResources(r *http.Request, subpath string, d_id int) (resourceList, int) {
+	p_id, err := GetIdFromUrl(r.RequestURI)
+	isAuthenticated, user := AuthoriseByToken(r)
+	//resultResources := resourceList{}
 
-//func deleteProjectResources(r *http.Request, subpath string, r_id int) int {
-//	p_id, err := GetIdFromUrl(r.RequestURI)
-//	isAuthenticated, user := AuthoriseByToken(r)
-//
-//	if err != nil || p_id == -1 {
-//		return http.StatusBadRequest
-//	}
-//
-//	if subpath != "resource" || r_id < 0 {
-//		return http.StatusNotFound
-//	}
-//
-//	for _, p := range projects {
-//		if p.ID == p_id {
-//			if isAuthenticated && p.Owner == user.ID {
-//				for i, res := range resources {
-//					if res.Project == p_id && res.ID == r_id {
-//						resources = append(resources[:i], resources[i+1:]...)
-//						return http.StatusNoContent
-//					}
-//				}
-//				return http.StatusNotFound
-//			}
-//
-//			return http.StatusForbidden
-//		}
-//	}
-//	return http.StatusNotFound
-//}
+	if err != nil || p_id == -1 {
+		return resourceList{}, http.StatusBadRequest
+	}
+
+	if subpath != "resources" && subpath != "resource" || subpath != "resources" && d_id < 0 || subpath != "resource" && d_id > -1 {
+		return resourceList{}, http.StatusNotFound
+	}
+
+	db, err := sql.Open("mysql", "root:@/saitynai")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	p := getProjectsList("select * from project where id_project=" + strconv.Itoa(p_id))
+
+	if len(p) == 0 {
+		return resourceList{}, http.StatusNotFound
+	}
+
+	isBought := false
+
+	boughtRows, err := db.Query("select * from bought_projects where fk_project=? and fk_buyer=?", p_id, user.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for boughtRows.Next() {
+		isBought = true
+	}
+
+	var resources resourceList
+	if p[0].IsPublic && p[0].Price == 0 || isAuthenticated && p[0].Owner.ID == user.ID || isAuthenticated && user.Role == 1 || isAuthenticated && isBought /*|| contains(user.OwnedProjects, p.ID)*/ {
+		if d_id < 0 {
+			resources = getResourcesList("select * from resource where fk_project=" + strconv.Itoa(p_id))
+		} else {
+			resources = getResourcesList("select * from resource where fk_project=" + strconv.Itoa(p_id) + " and id_resource=" + strconv.Itoa(d_id))
+		}
+		//for _, res := range resources {
+		//	if res.Project == p_id && d_id == -1 || res.Project == p_id && d_id == res.ID{
+		//		resultResources = append(resultResources, res)
+		//	}
+		//}
+		if len(resources) == 0 {
+			return resourceList{}, http.StatusNotFound
+		}
+		return resources, http.StatusOK
+	}
+
+	//for _, p := range projects {
+	//	if p.ID == p_id {
+	//		if p.IsPublic && p.Price == 0 || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 /*|| contains(user.OwnedProjects, p.ID)*/ {
+	//			for _, res := range resources {
+	//				if res.Project == p_id && d_id == -1 || res.Project == p_id && d_id == res.ID{
+	//					resultResources = append(resultResources, res)
+	//				}
+	//			}
+	//			if len(resultResources) == 0 {
+	//				return resourceList{}, http.StatusNotFound
+	//			}
+	//			return resultResources, http.StatusOK
+	//		}
+	//
+	//		return resourceList{}, http.StatusForbidden
+	//	}
+	//}
+	return resourceList{}, http.StatusForbidden
+}
+
+func deleteProjectResources(r *http.Request, subpath string, r_id int) int {
+	p_id, err := GetIdFromUrl(r.RequestURI)
+	isAuthenticated, user := AuthoriseByToken(r)
+
+	if err != nil || p_id == -1 {
+		return http.StatusBadRequest
+	}
+
+	if subpath != "resource" || r_id < 0 {
+		return http.StatusNotFound
+	}
+
+	p := getProjectsList("select * from project where id_project=" + strconv.Itoa(p_id))
+
+	if r_id >= 0 {
+		res := getResourcesList("select * from resource where id_resource=" + strconv.Itoa(r_id))
+		if len(res) == 0 {
+			return http.StatusNotFound
+		}
+	}
+
+	if len(p) == 0 {
+		return http.StatusNotFound
+	}
+
+	if isAuthenticated && p[0].Owner.ID == user.ID {
+		db, err := sql.Open("mysql", "root:@/saitynai")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
+		if r_id < 0 {
+			db.Query("delete from Resource where fk_project=?", p_id)
+		} else {
+			db.Query("delete from Resource where id_resource=?", r_id)
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		return http.StatusNoContent
+	}
+	return http.StatusForbidden
+}
 
 func projectDelete(r *http.Request) (project, int) {
 	id, err := GetIdFromUrl(r.RequestURI)
