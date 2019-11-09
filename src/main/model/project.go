@@ -196,27 +196,27 @@ func HandleProjectRequest(w http.ResponseWriter, r *http.Request) {
 			//			json.NewEncoder(w).Encode(d)
 			//		}
 			//		return
-			//	case "reviews":
-			//		if id != -1 {
-			//			w.WriteHeader(http.StatusNotFound)
-			//			return
-			//		}
-			//
-			//		rev, status := getProjectReviews(r, subpath, -1)
-			//		w.WriteHeader(status)
-			//
-			//		if status == http.StatusOK {
-			//			json.NewEncoder(w).Encode(rev)
-			//		}
-			//		return
-			//	case "review":
-			//		rev, status := getProjectReviews(r, subpath, id)
-			//		w.WriteHeader(status)
-			//
-			//		if status == http.StatusOK {
-			//			json.NewEncoder(w).Encode(rev)
-			//		}
-			//		return
+				case "reviews":
+					if id != -1 {
+						w.WriteHeader(http.StatusNotFound)
+						return
+					}
+
+					rev, status := getProjectReviews(r, subpath, -1)
+					w.WriteHeader(status)
+
+					if status == http.StatusOK {
+						json.NewEncoder(w).Encode(rev)
+					}
+					return
+				case "review":
+					rev, status := getProjectReviews(r, subpath, id)
+					w.WriteHeader(status)
+
+					if status == http.StatusOK {
+						json.NewEncoder(w).Encode(rev)
+					}
+					return
 				case "resources":
 					if id != -1 {
 						w.WriteHeader(http.StatusNotFound)
@@ -354,44 +354,59 @@ func projectGet(r *http.Request) (project, int) {
 //	}
 //	return donationsList{}, http.StatusNotFound
 //}
-//
-//func getProjectReviews(r *http.Request, subpath string, d_id int) (reviewList, int) {
-//	p_id, err := GetIdFromUrl(r.RequestURI)
-//	isAuthenticated, user := AuthoriseByToken(r)
-//	resultReviews := reviewList{}
-//
-//	if err != nil || p_id == -1 {
-//		return reviewList{}, http.StatusBadRequest
-//	}
-//
-//	if subpath != "reviews" && subpath != "review" || subpath != "reviews" && d_id < 0 || subpath != "review" && d_id > -1 {
-//		return reviewList{}, http.StatusNotFound
-//	}
-//
-//	for _, p := range projects {
-//		if p.ID == p_id {
-//			if p.IsPublic || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 {
-//				for _, rev :=range reviews {
-//					if rev.Project == p_id && d_id == -1 || rev.Project == p_id && d_id == rev.ID{
-//						resultReviews = append(resultReviews, rev)
-//					}
-//				}
-//				if len(resultReviews) == 0 {
-//					return reviewList{}, http.StatusNotFound
-//				}
-//				return resultReviews, http.StatusOK
-//			}
-//
-//			return reviewList{}, http.StatusForbidden
-//		}
-//	}
-//	return reviewList{}, http.StatusNotFound
-//}
-//
+
+func getProjectReviews(r *http.Request, subpath string, d_id int) (reviewList, int) {
+	p_id, err := GetIdFromUrl(r.RequestURI)
+	isAuthenticated, user := AuthoriseByToken(r)
+
+	if err != nil || p_id == -1 {
+		return reviewList{}, http.StatusBadRequest
+	}
+
+	if subpath != "reviews" && subpath != "review" || subpath != "reviews" && d_id < 0 || subpath != "review" && d_id > -1 {
+		return reviewList{}, http.StatusNotFound
+	}
+
+	db, err := sql.Open("mysql", "root:@/saitynai")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	p := getProjectsList("select * from project where id_project=" + strconv.Itoa(p_id))
+
+	if len(p) == 0 {
+		return reviewList{}, http.StatusNotFound
+	}
+
+	isBought := false
+
+	boughtRows, err := db.Query("select * from bought_projects where fk_project=? and fk_buyer=?", p_id, user.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for boughtRows.Next() {
+		isBought = true
+	}
+
+	var reviews reviewList
+	if p[0].IsPublic || isAuthenticated && p[0].Owner.ID == user.ID || isAuthenticated && user.Role == 1 || isAuthenticated && isBought {
+		if d_id < 0 {
+			reviews = getReviewsList("select * from review where fk_project=" + strconv.Itoa(p_id))
+		} else {
+			reviews = getReviewsList("select * from review where fk_project=" + strconv.Itoa(p_id) + " and id_review=" + strconv.Itoa(d_id))
+		}
+		if len(reviews) == 0 {
+			return reviewList{}, http.StatusNotFound
+		}
+		return reviews, http.StatusOK
+	}
+	return reviewList{}, http.StatusNotFound
+}
+
 func getProjectResources(r *http.Request, subpath string, d_id int) (resourceList, int) {
 	p_id, err := GetIdFromUrl(r.RequestURI)
 	isAuthenticated, user := AuthoriseByToken(r)
-	//resultResources := resourceList{}
 
 	if err != nil || p_id == -1 {
 		return resourceList{}, http.StatusBadRequest
@@ -430,34 +445,11 @@ func getProjectResources(r *http.Request, subpath string, d_id int) (resourceLis
 		} else {
 			resources = getResourcesList("select * from resource where fk_project=" + strconv.Itoa(p_id) + " and id_resource=" + strconv.Itoa(d_id))
 		}
-		//for _, res := range resources {
-		//	if res.Project == p_id && d_id == -1 || res.Project == p_id && d_id == res.ID{
-		//		resultResources = append(resultResources, res)
-		//	}
-		//}
 		if len(resources) == 0 {
 			return resourceList{}, http.StatusNotFound
 		}
 		return resources, http.StatusOK
 	}
-
-	//for _, p := range projects {
-	//	if p.ID == p_id {
-	//		if p.IsPublic && p.Price == 0 || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 /*|| contains(user.OwnedProjects, p.ID)*/ {
-	//			for _, res := range resources {
-	//				if res.Project == p_id && d_id == -1 || res.Project == p_id && d_id == res.ID{
-	//					resultResources = append(resultResources, res)
-	//				}
-	//			}
-	//			if len(resultResources) == 0 {
-	//				return resourceList{}, http.StatusNotFound
-	//			}
-	//			return resultResources, http.StatusOK
-	//		}
-	//
-	//		return resourceList{}, http.StatusForbidden
-	//	}
-	//}
 	return resourceList{}, http.StatusForbidden
 }
 
