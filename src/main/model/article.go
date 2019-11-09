@@ -1,9 +1,12 @@
 package model
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"strconv"
 )
 
 type article struct {
@@ -12,79 +15,27 @@ type article struct {
 	Content string `json:"content"`
 	FullText string `json:"full_text"`
 	IsPublic bool `json:"is_public"`
+	Author int `json:"author"`
 }
 
 type articleList []article
 
-var articles = articleList{
-	{
-		ID: 1,
-		Title: "Article about Animals",
-		Content: "Cats and Dogs are #1 inheritance ref",
-		FullText: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut " +
-			"labore et dolore magna aliqua. Diam donec adipiscing tristique risus nec feugiat. Maecenas accumsan " +
-			"lacus vel facilisis volutpat est velit egestas. Libero volutpat sed cras ornare arcu. Morbi tristique " +
-			"senectus et netus et malesuada fames. In metus vulputate eu scelerisque. Pretium lectus quam id leo in " +
-			"vitae. Varius quam quisque id diam vel. At in tellus integer feugiat scelerisque varius morbi enim. " +
-			"Augue neque gravida in fermentum et sollicitudin ac orci. Viverra orci sagittis eu volutpat odio " +
-			"facilisis. Auctor augue mauris augue neque. Nisl tincidunt eget nullam non nisi est sit amet facilisis. " +
-			"Posuere ac ut consequat semper viverra nam. Lacus laoreet non curabitur gravida arcu ac tortor " +
-			"dignissim. Purus viverra accumsan in nisl nisi scelerisque.",
-		IsPublic: true,
-	},
-	{
-		ID: 2,
-		Title: "Article about passwords",
-		Content: "Treat them as your underwear",
-		FullText: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut " +
-			"labore et dolore magna aliqua. Diam donec adipiscing tristique risus nec feugiat. Maecenas accumsan " +
-			"lacus vel facilisis volutpat est velit egestas. Libero volutpat sed cras ornare arcu. Morbi tristique " +
-			"senectus et netus et malesuada fames. In metus vulputate eu scelerisque. Pretium lectus quam id leo in " +
-			"vitae. Varius quam quisque id diam vel. At in tellus integer feugiat scelerisque varius morbi enim. " +
-			"Augue neque gravida in fermentum et sollicitudin ac orci. Viverra orci sagittis eu volutpat odio " +
-			"facilisis. Auctor augue mauris augue neque. Nisl tincidunt eget nullam non nisi est sit amet facilisis. " +
-			"Posuere ac ut consequat semper viverra nam. Lacus laoreet non curabitur gravida arcu ac tortor " +
-			"dignissim. Purus viverra accumsan in nisl nisi scelerisque.",
-		IsPublic: true,
-	},
-	{
-		ID: 3,
-		Title: "Unfinished article",
-		Content: "Super secret content",
-		FullText: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut " +
-			"labore et dolore magna aliqua. Diam donec adipiscing tristique risus nec feugiat. Maecenas accumsan " +
-			"lacus vel facilisis volutpat est velit egestas. Libero volutpat sed cras ornare arcu. Morbi tristique " +
-			"senectus et netus et malesuada fames. In metus vulputate eu scelerisque. Pretium lectus quam id leo in " +
-			"vitae. Varius quam quisque id diam vel. At in tellus integer feugiat scelerisque varius morbi enim. " +
-			"Augue neque gravida in fermentum et sollicitudin ac orci. Viverra orci sagittis eu volutpat odio " +
-			"facilisis. Auctor augue mauris augue neque. Nisl tincidunt eget nullam non nisi est sit amet facilisis. " +
-			"Posuere ac ut consequat semper viverra nam. Lacus laoreet non curabitur gravida arcu ac tortor " +
-			"dignissim. Purus viverra accumsan in nisl nisi scelerisque.",
-		IsPublic: false,
-	},
-}
-
-var articlesIndexer = 4
-
 func authoriseArticleBehaviour(r *http.Request, id int) (bool, User) {
-	for _, a := range articles {
-		if a.ID == id && a.IsPublic {
-			return true, User{}
-		}
+	a := getArticlesList("select * from article where id_article=" + strconv.Itoa(id))
+
+	if len(a) == 0 {
+		return false, User{}
+	}
+
+	if a[0].ID == id && a[0].IsPublic {
+		return true, User{}
 	}
 
 	isAuthenticated, u := AuthoriseByToken(r)
-	if isAuthenticated && u.Role == 1 {
+	if isAuthenticated && u.Role == 1 || isAuthenticated && u.ID == a[0].Author {
 		return true, u
 	}
 
-	if isAuthenticated {
-		for _, a := range u.Articles {
-			if a.ID == id {
-				return true, u
-			}
-		}
-	}
 	return false, User{}
 }
 
@@ -95,6 +46,8 @@ func HandleArticlesGet(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 
 		w.WriteHeader(http.StatusOK)
+
+		articles := getArticlesList("select * from article")
 
 		for _, a := range articles {
 			isAuthorised, _ := authoriseArticleBehaviour(r, a.ID)
@@ -132,9 +85,29 @@ func HandleArticleCreate(w http.ResponseWriter, r *http.Request)  {
 			return
 		}
 
-		newArticle.ID = articlesIndexer
-		articlesIndexer++
-		articles = append(articles, newArticle)
+		db, err := sql.Open("mysql", "root:@/saitynai")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
+		articleIdRows, err := db.Query("SELECT id_article from article ORDER BY id_article DESC LIMIT 1")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for articleIdRows.Next() {
+			err = articleIdRows.Scan(&newArticle.ID)
+			if err != nil {
+				log.Fatal(err)
+			}
+			newArticle.ID++
+		}
+
+		newArticle.Author = user.ID
+
+		db.Query("insert into article (title, content, full_text, is_public, id_article, fk_author) values (?, ?, ?, ?, ?, ?)", newArticle.Title, newArticle.Content, newArticle.FullText, newArticle.IsPublic, newArticle.ID, newArticle.Author)
+
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 
@@ -176,25 +149,25 @@ func HandleArticleRequest(w http.ResponseWriter, r *http.Request) {
 
 func articleGet(r *http.Request) (article, int) {
 	id, err := GetIdFromUrl(r.RequestURI)
+	isAuthorised, user := AuthoriseByToken(r)
 
 	if err != nil || id == -1 {
 		return article{}, http.StatusBadRequest
 	}
 
-	for _, a := range articles {
-		if a.ID == id {
-			if a.IsPublic {
-				return a, http.StatusOK
-			}
-			isAuthorised, u := AuthoriseByToken(r)
-			if isAuthorised && u.Role == 1 {
-				return a, http.StatusOK
-			}
-			return article{}, http.StatusForbidden
-		}
+	articles := getArticlesList("select * from article where id_article=" + strconv.Itoa(id))
+
+	if len(articles) == 0 {
+		return article{}, http.StatusNotFound
 	}
 
-	return article{ID: -1}, http.StatusNotFound
+	a := articles[0]
+
+	if a.IsPublic || isAuthorised && a.Author == user.ID || isAuthorised && user.Role == 1 {
+		return a, http.StatusOK
+	}
+
+	return article{}, http.StatusForbidden
 }
 
 func articleDelete(r *http.Request) (article, int) {
@@ -205,15 +178,22 @@ func articleDelete(r *http.Request) (article, int) {
 	}
 
 	isAuthorised, u := AuthoriseByToken(r)
-	if isAuthorised && u.Role == 1 {
-		for i, a := range articles {
-			if a.ID == id {
-				articles = append(articles[:i], articles[i+1:]...)
-				return a, http.StatusNoContent
-			}
-		}
 
-		return article{ID: -1}, http.StatusNotFound
+	db, err := sql.Open("mysql", "root:@/saitynai")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	articleToDelete := getArticlesList("select * from article where id_article=" + strconv.Itoa(id))
+
+	if len(articleToDelete) == 0 {
+		return article{}, http.StatusNotFound
+	}
+
+	if isAuthorised && u.Role == 1 || isAuthorised && u.ID == articleToDelete[0].Author {
+		db.Query("delete from article where id_article=?", id)
+		return article{}, http.StatusNoContent
 	}
 
 	return article{}, http.StatusForbidden
@@ -235,26 +215,79 @@ func articleUpdate(r *http.Request) (article, int) {
 		}
 		json.Unmarshal(reqBody, &updateArticle)
 
-		if updateArticle.Title != "" && updateArticle.Content != "" &&
-			updateArticle.FullText != "" {
-			for i, a := range articles {
-				if a.ID == id {
-					a.Title = updateArticle.Title
-					a.Content = updateArticle.Content
-					a.FullText = updateArticle.FullText
-					a.IsPublic = updateArticle.IsPublic
-					remArticles := articles[i+1:]
-					articles = append(articles[:i], a)
-					articles = append(articles, remArticles...)
-					return a, http.StatusOK
-				}
-			}
+		db, err := sql.Open("mysql", "root:@/saitynai")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
 
-			return article{ID: -1}, http.StatusNotFound
+		articleId, err := db.Query("select id_article, fk_author from article where id_article=?", id)
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		return article{}, http.StatusBadRequest
+		for articleId.Next() {
+			var aId int
+			var aAuthorId int
+			articleId.Scan(&aId, &aAuthorId)
+			if isAuthorised && u.Role == 1 {
+				 _, err := db.Query("update article set title=?, content=?, full_text=?, is_public=?, fk_author=? " +
+					"where id_article=?", updateArticle.Title, updateArticle.Content, updateArticle.FullText, updateArticle.IsPublic, updateArticle.Author,
+					id)
+				 if err != nil {
+					log.Fatal(err)
+				 }
+				 return getArticlesList("select * from article where id_article=" + strconv.Itoa(id))[0], http.StatusOK
+			}
+
+			return article{}, http.StatusForbidden
+		}
+
+		return article{}, http.StatusNotFound
 	}
 
 	return article{}, http.StatusForbidden
+}
+
+func getArticlesList(s string) articleList {
+	var (
+		id_article int
+		title string
+		content string
+		full_text string
+		is_public bool
+		fk_author int
+	)
+
+	db, err := sql.Open("mysql", "root:@/saitynai")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var articles = articleList{}
+	var a = article{}
+	for rows.Next() {
+		err := rows.Scan(&title, &content, &full_text, &is_public, &id_article, &fk_author)
+		if err != nil {
+			log.Fatal(err)
+		}
+		a = article{
+			ID: id_article,
+			Title: title,
+			Content: content,
+			FullText: full_text,
+			IsPublic: is_public,
+			Author: fk_author,
+		}
+
+		articles = append(articles, a)
+	}
+	return articles
 }
