@@ -66,10 +66,10 @@ var articles = articleList{
 
 var articlesIndexer = 4
 
-func authoriseArticleBehaviour(r *http.Request, id int) (bool, user) {
+func authoriseArticleBehaviour(r *http.Request, id int) (bool, User) {
 	for _, a := range articles {
 		if a.ID == id && a.IsPublic {
-			return true, user{}
+			return true, User{}
 		}
 	}
 
@@ -85,7 +85,7 @@ func authoriseArticleBehaviour(r *http.Request, id int) (bool, user) {
 			}
 		}
 	}
-	return false, user{}
+	return false, User{}
 }
 
 func HandleArticlesGet(w http.ResponseWriter, r *http.Request) {

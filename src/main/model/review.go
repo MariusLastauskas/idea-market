@@ -61,17 +61,17 @@ func HandleReviewCreate(w http.ResponseWriter, r *http.Request)  {
 		json.Unmarshal(reqBody, &newReview)
 		newReview.Reviewer = user.ID
 
-		for _, p := range projects {
-			if p.ID == newReview.Project {
-				w.Header().Add("Content-Type", "application/json")
-				newReview.ID = reviewIndexer
-				reviewIndexer++
-				reviews = append(reviews, newReview)
-				w.WriteHeader(http.StatusCreated)
-				json.NewEncoder(w).Encode(newReview);
-				return
-			}
-		}
+		//for _, p := range projects {
+		//	if p.ID == newReview.Project {
+		//		w.Header().Add("Content-Type", "application/json")
+		//		newReview.ID = reviewIndexer
+		//		reviewIndexer++
+		//		reviews = append(reviews, newReview)
+		//		w.WriteHeader(http.StatusCreated)
+		//		json.NewEncoder(w).Encode(newReview);
+		//		return
+		//	}
+		//}
 		w.WriteHeader(http.StatusNotFound)
 	} else {
 		w.WriteHeader(http.StatusForbidden)

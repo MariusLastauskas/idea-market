@@ -80,18 +80,18 @@ func HandleDonationCreate(w http.ResponseWriter, r *http.Request)  {
 			return
 		}
 
-		for _, p := range projects {
-			if p.ID == newDonation.Project {
-				w.Header().Add("Content-Type", "application/json")
-				donations = append(donations, newDonation)
-				newDonation.ID = donationsIndexer
-				projectIndexer++
-				w.WriteHeader(http.StatusCreated)
-
-				json.NewEncoder(w).Encode(newDonation)
-				return
-			}
-		}
+		//for _, p := range projects {
+		//	if p.ID == newDonation.Project {
+		//		w.Header().Add("Content-Type", "application/json")
+		//		donations = append(donations, newDonation)
+		//		newDonation.ID = donationsIndexer
+		//		projectIndexer++
+		//		w.WriteHeader(http.StatusCreated)
+		//
+		//		json.NewEncoder(w).Encode(newDonation)
+		//		return
+		//	}
+		//}
 		w.WriteHeader(http.StatusNotFound)
 	} else {
 		w.WriteHeader(http.StatusForbidden)

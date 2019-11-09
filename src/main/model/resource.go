@@ -47,7 +47,8 @@ func HandleResourceCreate(w http.ResponseWriter, r *http.Request)  {
 		return
 	}
 
-	isAuthenticated, user := AuthoriseByToken(r)
+	//isAuthenticated, user := AuthoriseByToken(r)
+	isAuthenticated, _ := AuthoriseByToken(r)
 
 	if isAuthenticated {
 		var newResource resource
@@ -64,22 +65,22 @@ func HandleResourceCreate(w http.ResponseWriter, r *http.Request)  {
 			return
 		}
 
-		for _, p := range projects {
-			if p.ID == newResource.Project {
-				if p.Owner == user.ID {
-					w.Header().Add("Content-Type", "application/json")
-					resources = append(resources, newResource)
-					newResource.ID = resourcesIndexer
-					resourcesIndexer++
-					w.WriteHeader(http.StatusCreated)
-					json.NewEncoder(w).Encode(newResource)
-
-					return
-				}
-				w.WriteHeader(http.StatusForbidden)
-				return
-			}
-		}
+		//for _, p := range projects {
+		//	if p.ID == newResource.Project {
+		//		if p.Owner == user.ID {
+		//			w.Header().Add("Content-Type", "application/json")
+		//			resources = append(resources, newResource)
+		//			newResource.ID = resourcesIndexer
+		//			resourcesIndexer++
+		//			w.WriteHeader(http.StatusCreated)
+		//			json.NewEncoder(w).Encode(newResource)
+		//
+		//			return
+		//		}
+		//		w.WriteHeader(http.StatusForbidden)
+		//		return
+		//	}
+		//}
 		w.WriteHeader(http.StatusNotFound)
 	} else {
 		w.WriteHeader(http.StatusForbidden)
