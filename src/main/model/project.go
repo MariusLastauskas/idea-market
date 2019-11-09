@@ -175,27 +175,27 @@ func HandleProjectRequest(w http.ResponseWriter, r *http.Request) {
 			id, _ := getSubIdFromURI(r.RequestURI)
 
 			switch subpath {
-			//	case "donations":
-			//		if id != -1 {
-			//			w.WriteHeader(http.StatusNotFound)
-			//			return
-			//		}
-			//
-			//		d, status := getProjectDonations(r, subpath, -1)
-			//		w.WriteHeader(status)
-			//
-			//		if status == http.StatusOK {
-			//			json.NewEncoder(w).Encode(d)
-			//		}
-			//		return
-			//	case "donation":
-			//		d, status := getProjectDonations(r, subpath, id)
-			//		w.WriteHeader(status)
-			//
-			//		if status == http.StatusOK {
-			//			json.NewEncoder(w).Encode(d)
-			//		}
-			//		return
+				case "donations":
+					if id != -1 {
+						w.WriteHeader(http.StatusNotFound)
+						return
+					}
+
+					d, status := getProjectDonations(r, subpath, -1)
+					w.WriteHeader(status)
+
+					if status == http.StatusOK {
+						json.NewEncoder(w).Encode(d)
+					}
+					return
+				case "donation":
+					d, status := getProjectDonations(r, subpath, id)
+					w.WriteHeader(status)
+
+					if status == http.StatusOK {
+						json.NewEncoder(w).Encode(d)
+					}
+					return
 				case "reviews":
 					if id != -1 {
 						w.WriteHeader(http.StatusNotFound)
@@ -306,54 +306,46 @@ func projectGet(r *http.Request) (project, int) {
 	return project{}, http.StatusForbidden
 }
 
-//func getProjectDonations(r *http.Request, subpath string, d_id int) (donationsList, int) {
-//	p_id, err := GetIdFromUrl(r.RequestURI)
-//	isAuthenticated, user := AuthoriseByToken(r)
-//	resultDonations := donationsList{}
-//
-//	if err != nil || p_id == -1 {
-//		return donationsList{}, http.StatusBadRequest
-//	}
-//
-//	if subpath != "donations" && subpath != "donation" || subpath != "donations" && d_id < 0 || subpath != "donation" && d_id > -1 {
-//		return donationsList{}, http.StatusNotFound
-//	}
-//
-//	p_list := getProjectsList("select * from projects where id_project=" + strconv.Itoa(p_id))
-//
-//	if len(p_list) == 0 {
-//		return donationsList{}, http.StatusNotFound
-//	}
-//
-//	db, err := sql.Open("mysql", "root:@/saitynai")
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	defer db.Close()
-//
-//	if p_list[0].IsPublic || isAuthenticated && p_list[0].Owner.ID == user.ID || isAuthenticated && user.Role == 1 {
-//		db.Query("SELECT * from donation where fk_project=?", p_id)
-//	}
-//
-//	for _, p := range projects {
-//		if p.ID == p_id {
-//			if p.IsPublic || isAuthenticated && p.Owner == user.ID || isAuthenticated && user.Role == 1 {
-//				for _, d :=range donations {
-//					if d.Project == p_id && d_id == -1 || d.Project == p_id && d_id == d.ID{
-//						resultDonations = append(resultDonations, d)
-//					}
-//				}
-//				if len(resultDonations) == 0 {
-//					return donationsList{}, http.StatusNotFound
-//				}
-//				return resultDonations, http.StatusOK
-//			}
-//
-//			return donationsList{}, http.StatusForbidden
-//		}
-//	}
-//	return donationsList{}, http.StatusNotFound
-//}
+func getProjectDonations(r *http.Request, subpath string, d_id int) (donationsList, int) {
+	p_id, err := GetIdFromUrl(r.RequestURI)
+	isAuthenticated, user := AuthoriseByToken(r)
+	//resultDonations := donationsList{}
+
+	if err != nil || p_id == -1 {
+		return donationsList{}, http.StatusBadRequest
+	}
+
+	if subpath != "donations" && subpath != "donation" || subpath != "donations" && d_id < 0 || subpath != "donation" && d_id > -1 {
+		return donationsList{}, http.StatusNotFound
+	}
+
+	db, err := sql.Open("mysql", "root:@/saitynai")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	p_list := getProjectsList("select * from project where id_project=" + strconv.Itoa(p_id))
+
+	if len(p_list) == 0 {
+		return donationsList{}, http.StatusNotFound
+	}
+
+	var donations donationsList
+
+	if p_list[0].IsPublic || isAuthenticated && p_list[0].Owner.ID == user.ID || isAuthenticated && user.Role == 1 {
+		if d_id < 0 {
+			donations = getDonationsList("select * from donation where fk_project=" + strconv.Itoa(p_id))
+		} else {
+			donations = getDonationsList("select * from donation where fk_project=" + strconv.Itoa(p_id) + " and id_donation=" + strconv.Itoa(d_id))
+		}
+		if len(donations) == 0 {
+			return donationsList{}, http.StatusNotFound
+		}
+		return donations, http.StatusOK
+	}
+	return donationsList{}, http.StatusForbidden
+}
 
 func getProjectReviews(r *http.Request, subpath string, d_id int) (reviewList, int) {
 	p_id, err := GetIdFromUrl(r.RequestURI)

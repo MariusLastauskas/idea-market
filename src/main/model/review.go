@@ -19,32 +19,6 @@ type review struct {
 
 type reviewList []review
 
-var reviews = reviewList{
-	{
-		ID:      1,
-		Comment: "Me likey",
-		Grade: 5,
-		Reviewer: 1,
-		Project: 4,
-	},
-	{
-		ID: 2,
-		Comment: "Me no likey",
-		Grade: 1,
-		Reviewer: 2,
-		Project: 4,
-	},
-	{
-		ID: 3,
-		Comment: "Me somewhat likey",
-		Grade: 3,
-		Reviewer: 3,
-		Project: 5,
-	},
-}
-
-var reviewIndexer = 4
-
 func HandleReviewCreate(w http.ResponseWriter, r *http.Request)  {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)

@@ -1,9 +1,12 @@
 package model
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"strconv"
 )
 
 type donation struct {
@@ -15,42 +18,13 @@ type donation struct {
 
 type donationsList []donation
 
-var donations = donationsList{
-	{
-		ID: 1,
-		Size: 3.00,
-		Donor: 1,
-		Project: 2,
-	},
-	{
-		ID: 2,
-		Size: 3.00,
-		Donor: 2,
-		Project: 2,
-	},
-	{
-		ID: 3,
-		Size: 3.00,
-		Donor: 1,
-		Project: 1,
-	},
-	{
-		ID: 4,
-		Size: 3.00,
-		Donor: 1,
-		Project: 1,
-	},
-}
-
-var donationsIndexer = 5
-
 func HandleDonationsGet(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Add("Content-Type", "application/json")
 
 		w.WriteHeader(http.StatusOK)
 
-		json.NewEncoder(w).Encode(donations)
+		json.NewEncoder(w).Encode(getDonationsList("select * from donation"))
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -80,20 +54,78 @@ func HandleDonationCreate(w http.ResponseWriter, r *http.Request)  {
 			return
 		}
 
-		//for _, p := range projects {
-		//	if p.ID == newDonation.Project {
-		//		w.Header().Add("Content-Type", "application/json")
-		//		donations = append(donations, newDonation)
-		//		newDonation.ID = donationsIndexer
-		//		projectIndexer++
-		//		w.WriteHeader(http.StatusCreated)
-		//
-		//		json.NewEncoder(w).Encode(newDonation)
-		//		return
-		//	}
-		//}
-		w.WriteHeader(http.StatusNotFound)
-	} else {
-		w.WriteHeader(http.StatusForbidden)
+		p := getProjectsList("select * from project where id_project=" + strconv.Itoa(newDonation.Project))
+
+		if len(p) == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		db, err := sql.Open("mysql", "root:@/saitynai")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
+		donationIdRow, err := db.Query("SELECT id_Donation from donation ORDER BY id_donation DESC LIMIT 1")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for donationIdRow.Next() {
+			err = donationIdRow.Scan(&newDonation.ID)
+			if err != nil {
+				log.Fatal(err)
+			}
+			newDonation.ID++
+
+			db.Query("insert into donation (size, id_donation, fk_donor, fk_project) values (?, ?, ?, ?)", newDonation.Size,newDonation.ID,newDonation.Donor, newDonation.Project)
+
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+
+			json.NewEncoder(w).Encode(newDonation)
+		}
+		return
 	}
+	w.WriteHeader(http.StatusForbidden)
+}
+
+func getDonationsList(s string) donationsList {
+	var (
+		size float32
+		id_donation int
+		fk_donor int
+		fk_project int
+	)
+
+	db, err := sql.Open("mysql", "root:@/saitynai")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var donations = donationsList{}
+	var d = donation{}
+	for rows.Next() {
+		err := rows.Scan(&size, &id_donation, &fk_donor, &fk_project)
+		if err != nil {
+			log.Fatal(err)
+		}
+		d = donation{
+			ID: id_donation,
+			Size: size,
+			Donor: fk_donor,
+			Project: fk_project,
+		}
+		donations = append(donations, d)
+	}
+	return donations
 }
