@@ -286,12 +286,22 @@ func userDelete(r *http.Request) (user, int) {
 	}
 
 	if authoriseUserBehaviour(r, id) {
-		for i, u := range users {
-			if u.ID == id {
-				users = append(users[:i], users[i+1:]...)
-				return u, http.StatusNoContent
-			}
+		db, err := sql.Open("mysql", "root:@/saitynai")
+		if err != nil {
+			log.Fatal(err)
 		}
+		defer db.Close()
+
+		userId, err := db.Query("SELECT id_User from `user` WHERE id_User=?", id)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for userId.Next() {
+			db.Query("DELETE FROM `user` WHERE `user`.`id_User` = ?", id)
+			return user{}, http.StatusNoContent
+		}
+
 		return user{}, http.StatusNotFound
 	}
 
@@ -313,20 +323,24 @@ func userUpdate(r *http.Request) (user, int) {
 		}
 		json.Unmarshal(reqBody, &updateUser)
 
-		for i, u := range users {
-			if u.ID == id {
-				u.FullName = updateUser.FullName
-				u.Username = updateUser.Username
-				u.Email = updateUser.Email
-				u.PasswordHash = updateUser.PasswordHash
-				u.PhotoPath = updateUser.PhotoPath
-				u.Role = updateUser.Role
-				u.IsActive = updateUser.IsActive
-				remUsers := users[i+1:]
-				users = append(users[:i], u)
-				users = append(users, remUsers...)
-				return u, http.StatusOK
-			}
+		db, err := sql.Open("mysql", "root:@/saitynai")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
+		userId, err := db.Query("SELECT id_User from `user` WHERE id_User=?", id)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for userId.Next() {
+			db.Query("UPDATE `user` SET `full_name`=?, `username`=?, `email`=?, `password_hash`=?, " +
+				"`photo_path`=?, `role`=?, `is_active`=? WHERE `user`.`id_User` = ?", updateUser.FullName,
+				updateUser.Username, updateUser.Email, updateUser.PasswordHash, updateUser.PhotoPath, updateUser.Role,
+				updateUser.IsActive, id);
+
+			return getUsersList("select * from User where id_User = " + strconv.Itoa(id))[0], http.StatusOK
 		}
 
 		return user{}, http.StatusNotFound
