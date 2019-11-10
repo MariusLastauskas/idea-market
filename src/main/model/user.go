@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-type user struct {
+type User struct {
 	ID int `json:"id"`
 	FullName string `json:"full_name"`
 	Username string `json:"username"`
@@ -26,7 +26,7 @@ type user struct {
 	FollowedProjects projectList `json:"followed_projects"`
 }
 
-type userList []user
+type userList []User
 
 func authoriseUserBehaviour(r *http.Request, id int) bool {
 	isAuthenticated, u := AuthoriseByToken(r)
@@ -61,7 +61,7 @@ func HandleUserCreate(w http.ResponseWriter, r *http.Request)  {
 		return
 	}
 
-	var newUser user
+	var newUser User
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -98,7 +98,6 @@ func HandleUserCreate(w http.ResponseWriter, r *http.Request)  {
 	newUser.Role = 0
 	newUser.IsActive = true
 	newUser.Articles = []article{}
-	//userIndexer++
 
 	db.Query("INSERT INTO `user` (`full_name`, `username`, `email`, `password_hash`, " +
 		"`photo_path`, `role`, `is_active`, `id_User`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);", newUser.FullName,
@@ -142,11 +141,11 @@ func HandleUserRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func userGet(r *http.Request) (user, int) {
+func userGet(r *http.Request) (User, int) {
 	id, err := GetIdFromUrl(r.RequestURI)
 
 	if err != nil || id == -1 {
-		return user{}, http.StatusBadRequest
+		return User{}, http.StatusBadRequest
 	}
 
 	if authoriseUserBehaviour(r, id) {
@@ -155,17 +154,17 @@ func userGet(r *http.Request) (user, int) {
 			return users[0], http.StatusOK
 		}
 
-		return user{}, http.StatusNotFound
+		return User{}, http.StatusNotFound
 	}
 
-	return user{}, http.StatusForbidden
+	return User{}, http.StatusForbidden
 }
 
-func userDelete(r *http.Request) (user, int) {
+func userDelete(r *http.Request) (User, int) {
 	id, err := GetIdFromUrl(r.RequestURI)
 
 	if err != nil || id == -1 {
-		return user{}, http.StatusBadRequest
+		return User{}, http.StatusBadRequest
 	}
 
 	if authoriseUserBehaviour(r, id) {
@@ -182,27 +181,27 @@ func userDelete(r *http.Request) (user, int) {
 
 		for userId.Next() {
 			db.Query("DELETE FROM `user` WHERE `user`.`id_User` = ?", id)
-			return user{}, http.StatusNoContent
+			return User{}, http.StatusNoContent
 		}
 
-		return user{}, http.StatusNotFound
+		return User{}, http.StatusNotFound
 	}
 
-	return user{}, http.StatusForbidden
+	return User{}, http.StatusForbidden
 }
 
-func userUpdate(r *http.Request) (user, int) {
+func userUpdate(r *http.Request) (User, int) {
 	id, err := GetIdFromUrl(r.RequestURI)
 
 	if err != nil || id == -1 {
-		return user{}, http.StatusBadRequest
+		return User{}, http.StatusBadRequest
 	}
 
 	if authoriseUserBehaviour(r, id) {
-		var updateUser user
+		var updateUser User
 		reqBody, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			return user{}, http.StatusNotModified
+			return User{}, http.StatusNotModified
 		}
 		json.Unmarshal(reqBody, &updateUser)
 
@@ -226,10 +225,10 @@ func userUpdate(r *http.Request) (user, int) {
 			return getUsersList("select * from User where id_User = " + strconv.Itoa(id))[0], http.StatusOK
 		}
 
-		return user{}, http.StatusNotFound
+		return User{}, http.StatusNotFound
 	}
 
-	return user{}, http.StatusForbidden
+	return User{}, http.StatusForbidden
 }
 
 func getUsersList(s string) userList {
@@ -269,7 +268,7 @@ func getUsersList(s string) userList {
 	defer rows.Close()
 
 	var users = userList{}
-	var u = user{}
+	var u = User{}
 	var a = article{}
 	var op = project{}
 	for rows.Next() {
@@ -277,7 +276,7 @@ func getUsersList(s string) userList {
 		if err != nil {
 			log.Fatal(err)
 		}
-		u = user{
+		u = User{
 			ID: id_User,
 			FullName: full_name,
 			Username: username,

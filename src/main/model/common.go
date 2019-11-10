@@ -113,11 +113,11 @@ func AuthoriseByPassHash(usr string, passHash string) (bool, json.Token) {
 	return false, nil
 }
 
-func AuthoriseByToken(r *http.Request) (bool, user)  {
+func AuthoriseByToken(r *http.Request) (bool, User)  {
 	var pl CustomPayload
 	encodedToken, err := r.Cookie("jwtToken")
 	if err != nil {
-		return false, user{}
+		return false, User{}
 	}
 
 	token, err := base64.StdEncoding.DecodeString(encodedToken.Value)
@@ -125,7 +125,7 @@ func AuthoriseByToken(r *http.Request) (bool, user)  {
 	hd.KeyID = "";
 
 	if err != nil || pl.ExpirationTime.Time.UTC().Before(time.Now().UTC()) {
-		return false, user{}
+		return false, User{}
 	}
 
 	user := getUsersList("select * from User where id_User = " + strconv.Itoa(pl.ID))
