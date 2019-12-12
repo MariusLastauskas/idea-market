@@ -1,10 +1,10 @@
 import React from 'react';
-import Header from './components/header/Header';
+import Lander from './components/lander/Lander';
 import './App.css';
 
 const App = () => {
   return (
-    <Header />
+    <Lander />
   );
 }
 

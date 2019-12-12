@@ -1,0 +1,25 @@
+.lander {
+  overflow: hidden;
+}
+
+.lander__container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 64px auto;
+  max-width: 1090px;
+  min-height: 460px;
+}
+
+.lander__image {
+  min-width: 1090px;
+  position: fixed;
+  width: 100%;
+  z-index: -1;
+}
+
+.lander__slogon {
+  color: #fff;
+  font-size: 48px;
+  text-align: center;
+}

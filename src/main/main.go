@@ -37,5 +37,6 @@ func main() {
 	// resources
 	http.HandleFunc("/resource", model.HandleResourceCreate)
 
+	http.Header{}.Set("Access-Control-Allow-Origin", "*")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

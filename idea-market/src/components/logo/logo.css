@@ -1,0 +1,7 @@
+.logo {
+  background: linear-gradient(90deg, white 0%, white 10%, #ff2f2f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 24px;
+  font-weight: 700;
+}

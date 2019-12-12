@@ -142,10 +142,12 @@ func AuthoriseByToken(r *http.Request) (bool, User)  {
 //}
 
 func HandleBadPath(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusNotFound)
 }
 
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	username, err_username := r.Cookie("username")
 	passHash, err_pass_hash := r.Cookie("passHash")
 

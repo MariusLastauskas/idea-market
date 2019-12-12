@@ -1,8 +1,10 @@
 import React from 'react';
+import Link from '../link/Link';
+import './logo.scss';
 
 const Logo = () => {
     return (
-        <span>Idea market</span>
+        <Link className="logo" href="/" text="Idea Market" />
     );
 };
 

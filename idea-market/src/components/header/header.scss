@@ -1,0 +1,12 @@
+.header {
+    position: fixed;
+    width: 100%;
+
+    &__wrapper {
+        display: flex;
+        justify-content: space-between;
+        margin: auto;
+        max-width: 1090px;
+        padding: 8px;
+    }
+}
