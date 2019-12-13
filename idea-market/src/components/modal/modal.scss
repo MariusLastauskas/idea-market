@@ -1,0 +1,30 @@
+.modal {
+    display: flex;
+    justify-content: center;
+
+    &__close {
+        float: right;
+    }
+
+    &__container {
+        background: #fff;
+        border: 1px solid #000;
+        border-radius: 4px;
+        margin: 20px;
+        max-width: 600px;
+        padding: 10px;
+        width: 100%;
+        z-index: 2;
+    }
+
+    &::after {
+        background: rgba(255, 255, 255, 0.2);
+        content: '';
+        height: 100vh;
+        left: 0;
+        position: fixed;
+        top: 0;
+        width: 100vw;
+        z-index: 1;
+    }
+}
