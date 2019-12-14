@@ -1,3 +1,5 @@
+const axios = require('axios');
+
 export const getCookie = (name) => {
     var value = "; " + document.cookie;
     var parts = value.split("; " + name + "=");
@@ -10,4 +12,14 @@ export const deleteCookie = ( name ) => {
 
 export const addCookie = (name, value) => {
     document.cookie = `${name}=${value}`;
+}
+
+export const api = (path, method) => {
+    const options = {
+        url: path,
+        method: method,
+        withCredentials: true
+    };
+      
+    return axios(options);
 }

@@ -1,9 +1,9 @@
 import React from 'react';
 import './link.scss';
 
-const Link = ({className, href, text}) => {
+const Link = ({className, onRouteChange, text}) => {
     return (
-        <a className={`link ${className}`} href={href}>{text}</a>
+        <span className={`link ${className}`} onClick={onRouteChange}>{text}</span>
     );
 };
 

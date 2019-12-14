@@ -3,12 +3,16 @@
 }
 
 .lander__container {
+  margin: 64px auto;
+  max-width: 1074px;
+  min-height: 460px;
+  text-align: center;
+}
+
+.lander__container--centered {
   align-items: center;
   display: flex;
   justify-content: center;
-  margin: 64px auto;
-  max-width: 1090px;
-  min-height: 460px;
 }
 
 .lander__image {
@@ -16,6 +20,10 @@
   position: fixed;
   width: 100%;
   z-index: -1;
+}
+
+.lander__title {
+  color: #fff;
 }
 
 .lander__slogon {

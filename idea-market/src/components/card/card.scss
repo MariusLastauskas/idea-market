@@ -1,0 +1,39 @@
+.card {
+    background: rgba(255,255,255,0.7);;
+    border: 1px solid #000;
+    border-radius: 4px;
+    display: flex;
+    text-align: left;
+
+    &__description {
+        margin: 0;
+    }
+
+    &__multiplicity {
+        float: right;
+        margin-top: 40px;
+        width: 100px;
+    }
+
+    &__price {
+        color: #ff2f2f;
+        float: right;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    &__primary {
+        display: flex;
+        padding: 8px;
+        flex-basis: 80%;
+        flex-direction: column;
+    }
+
+    &__secondary {
+        border-left: 1px solid #000;
+        display: flex;
+        padding: 8px;
+        flex-basis: 20%;
+        flex-direction: column;
+    }
+}

@@ -2,12 +2,16 @@
     overflow: hidden;
 
     &__container {
-        align-items: center;
-        display: flex;
-        justify-content: center;
         margin: 64px auto;
-        max-width: 1090px;
+        max-width: 1074px;
         min-height: 460px;
+        text-align: center;
+
+        &--centered {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+        }
     }
 
     &__image {
@@ -15,6 +19,10 @@
         position: fixed;
         width: 100%;
         z-index: -1;
+    }
+
+    &__title {
+        color: #fff;
     }
 
     &__slogon {

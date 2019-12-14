@@ -1,0 +1,20 @@
+.content {
+    &__cards {
+        list-style-type: none;
+        padding: 0 16px;
+        // width: 200px;
+    }
+
+    // &__cards-li {
+    //     display: inline-flex;
+    // }
+
+    &__title {
+        background: linear-gradient(90deg, white 0%, white 10%, #ff2f2f 100%);
+        display: inline-block;
+        font-size: 40px;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+    }
+}

@@ -34,7 +34,8 @@ func authoriseUserBehaviour(r *http.Request, id int) bool {
 }
 
 func HandleUsersGet(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
  	isAuthenticated, u := AuthoriseByToken(r)
 
 	if !isAuthenticated || u.Role != 1 {
@@ -56,6 +57,8 @@ func HandleUsersGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUserCreate(w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -112,6 +115,8 @@ func HandleUserCreate(w http.ResponseWriter, r *http.Request)  {
 }
 
 func HandleUserRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Add("Content-Type", "application/json")
 
 	switch r.Method {

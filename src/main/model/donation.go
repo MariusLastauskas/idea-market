@@ -31,6 +31,8 @@ func HandleDonationsGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleDonationCreate(w http.ResponseWriter, r *http.Request)  {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return

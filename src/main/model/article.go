@@ -40,7 +40,8 @@ func authoriseArticleBehaviour(r *http.Request, id int) (bool, User) {
 }
 
 func HandleArticlesGet(w http.ResponseWriter, r *http.Request) {
-	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	if r.Method == "GET" {
 		resultArticles := articleList{}
 
@@ -64,7 +65,8 @@ func HandleArticlesGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleArticleCreate(w http.ResponseWriter, r *http.Request)  {
-	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -120,7 +122,8 @@ func HandleArticleCreate(w http.ResponseWriter, r *http.Request)  {
 }
 
 func HandleArticleRequest(w http.ResponseWriter, r *http.Request) {
-	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Add("Content-Type", "application/json")
 
 	switch r.Method {

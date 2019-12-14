@@ -1,10 +1,11 @@
 import React from 'react';
 import Link from '../link/Link';
+import {ROUTE} from '../content/constants';
 import './logo.scss';
 
-const Logo = () => {
+const Logo = ({onRouteChange}) => {
     return (
-        <Link className="logo" href="/" text="Idea Market" />
+        <Link className="logo" onRouteChange={() => {onRouteChange(ROUTE.LANDING)}} text="Idea Market" />
     );
 };
 
