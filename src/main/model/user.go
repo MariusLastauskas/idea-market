@@ -57,8 +57,16 @@ func HandleUsersGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUserCreate(w http.ResponseWriter, r *http.Request)  {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("access-control-allow-origin", "http://localhost:3000")
+	w.Header().Set("access-control-allow-methods", "GET, OPTIONS, POST, PATCH, PUT, DELETE");
+	w.Header().Set("access-control-allow-headers", "Origin, Content-Type, X-Auth-Token");
+	w.Header().Set("access-control-allow-credentials", "true")
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK);
+		return
+	}
+
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return

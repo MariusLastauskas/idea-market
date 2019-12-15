@@ -13,6 +13,9 @@ import Axios from 'axios';
 const Modal = ({ label, onClose, type, object, isEdit }) => {
 	const mainClassName = 'modal';
 
+	const [image, setImage] = useState('');
+	const [fullName, setFullName] = useState('');
+	const [email, setEmail] = useState('');
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [errorMsg, setErrorMsg] = useState('');
@@ -22,6 +25,8 @@ const Modal = ({ label, onClose, type, object, isEdit }) => {
 	const [isPublic, setIsPublic] = useState(false);
 	const [isLimited, setIsLimited] = useState(false);
 	const [quantity, setQuantity] = useState(0);
+	const [price, setPrice] = useState(0);
+	const [isRegister, setIsRegister] = useState(false);
 
 	const logIn = () => {
 		addCookie('username', username);
@@ -38,15 +43,6 @@ const Modal = ({ label, onClose, type, object, isEdit }) => {
 	};
 
 	const createArticle = () => {
-		// axios.post('http://localhost:8080/article', {
-
-		// })
-		// 	.then(function (response) {
-		// 		console.log(response);
-		// 	})
-		// 	.catch(function (error) {
-		// 		console.log(error);
-		// 	});
 		api('http://localhost:8080/article', 'POST',
 			{
 				"Title": title,
@@ -60,38 +56,132 @@ const Modal = ({ label, onClose, type, object, isEdit }) => {
 			});
 	};
 
+	const createProject = () => {
+		api('http://localhost:8080/project', 'POST',
+			{
+				"Name": title,
+				"Description": summary,
+				"Is_public": isPublic,
+				"Price": Number(price),
+				"Multiplicity": isLimited ? Number(quantity) : 0
+			})
+			.then((response) => {
+				console.log(response);
+				window.location.reload();
+			});
+	};
+
+	const createUser = () => {
+		api('http://localhost:8080/user', 'POST',
+			{
+				"full_name": fullName,
+				"username": username,
+				"email": email,
+				"password_hash": password,
+				"photo_path": image
+			})
+			.then((response) => {
+				console.log(response);
+				window.location.reload();
+			});
+	}
+
 	switch (type) {
 		case TYPE.LOGIN:
-			return (
-				<div className={mainClassName}>
-					<div className={`${mainClassName}__container`}>
-						<Button className={`${mainClassName}__close`} text="x" onClick={onClose} />
-						<h2 className={`${mainClassName}__label`}>{label}</h2>
-						<Input
-							label="Username"
-							name="username"
-							placeholder="Enter username"
-							type="text"
-							value={username}
-							onChange={(e) => {
-								setUsername(e.target.value);
-							}}
-						/>
-						<Input
-							label="Password"
-							name="password"
-							placeholder="Enter password"
-							type="password"
-							value={password}
-							onChange={(e) => {
-								setPassword(e.target.value);
-							}}
-						/>
-						<p className={`${mainClassName}__error`}>{errorMsg}</p>
-						<Button text="Log In" onClick={logIn} />
+			if (!isRegister) {
+				return (
+					<div className={mainClassName}>
+						<div className={`${mainClassName}__container`}>
+							<Button className={`${mainClassName}__close`} text="x" onClick={onClose} />
+							<h2 className={`${mainClassName}__label`}>{label}</h2>
+							<Input
+								label="Username"
+								name="username"
+								placeholder="Enter username"
+								type="text"
+								value={username}
+								onChange={(e) => {
+									setUsername(e.target.value);
+								}}
+							/>
+							<Input
+								label="Password"
+								name="password"
+								placeholder="Enter password"
+								type="password"
+								value={password}
+								onChange={(e) => {
+									setPassword(e.target.value);
+								}}
+							/>
+							<p className={`${mainClassName}__error`}>{errorMsg}</p>
+							<Button text="Log In" onClick={logIn} />
+							<Button text="Create account" onClick={() => { setIsRegister(!isRegister) }} />
+						</div>
 					</div>
-				</div>
-			);
+				);
+			} else {
+				return (
+					<div className={mainClassName}>
+						<div className={`${mainClassName}__container`}>
+							<Button className={`${mainClassName}__close`} text="x" onClick={onClose} />
+							<h2 className={`${mainClassName}__label`}>Create account</h2>
+							<Input
+								label="Full name"
+								name="full_name"
+								placeholder="Enter your full name"
+								type="text"
+								value={fullName}
+								onChange={(e) => {
+									setFullName(e.target.value);
+								}}
+							/>
+							<Input
+								label="Username"
+								name="username"
+								placeholder="Enter your username"
+								type="text"
+								value={username}
+								onChange={(e) => {
+									setUsername(e.target.value);
+								}}
+							/>
+							<Input
+								label="Email"
+								name="email"
+								placeholder="Enter your email"
+								type="email"
+								value={email}
+								onChange={(e) => {
+									setEmail(e.target.value);
+								}}
+							/>
+							<Input
+								label="Password"
+								name="password"
+								placeholder="Enter your password"
+								type="password"
+								value={password}
+								onChange={(e) => {
+									setPassword(e.target.value);
+								}}
+							/>
+							<Input
+								label="Avatar photo path"
+								name="photo"
+								placeholder="Enter your photo path"
+								type="text"
+								value={image}
+								onChange={(e) => {
+									setImage(e.target.value);
+								}}
+							/>
+							<p className={`${mainClassName}__error`}>{errorMsg}</p>
+							<Button text="Create article" onClick={createUser} />
+						</div>
+					</div>
+				);
+			}
 		case TYPE.ARTICLE_INFO:
 			if (!isEdit) {
 				return (
@@ -162,8 +252,8 @@ const Modal = ({ label, onClose, type, object, isEdit }) => {
 							<table>
 								<tbody>
 									<tr><td><h3>description: </h3></td><td><p>{object.description}</p></td></tr>
-									<tr><td><h3>Price: </h3></td><td><p>{object.price}</p></td></tr>
-									<tr><td><h3>Multiplicity: </h3></td><td><p>{object.multiplicity === 0 ? 'free' : object.multiplicity}</p></td></tr>
+									<tr><td><h3>Price: </h3></td><td><p>{object.price === 0 ? 'free' : object.price}</p></td></tr>
+									<tr><td><h3>Multiplicity: </h3></td><td><p>{object.multiplicity === 0 ? 'unlimited' : object.multiplicity}</p></td></tr>
 									<tr><td><h3>Visibility: </h3></td><td><p>{object.is_public ? 'public' : 'private'}</p></td></tr>
 									<tr><td><h3>Owner: </h3></td><td><p>{object.owner.username}</p></td></tr>
 									<tr><td><h3>Buyers: </h3></td><td><ul>{object.buyers.map((buyer, key) => {
@@ -235,6 +325,18 @@ const Modal = ({ label, onClose, type, object, isEdit }) => {
 									}}
 								/>
 							}
+							<Input
+								label="Price"
+								name="price"
+								placeholder="price"
+								type="text"
+								value={price}
+								onChange={(e) => {
+									setPrice(e.target.value);
+								}}
+							/>
+							<p className={`${mainClassName}__error`}>{errorMsg}</p>
+							<Button text="Create project" onClick={createProject} />
 						</div>
 					</div>);
 			}
