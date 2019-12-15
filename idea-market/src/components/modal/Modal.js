@@ -193,7 +193,7 @@ const Modal = ({ label, onClose, type, object, isEdit }) => {
 								<tbody>
 									<tr><td><h3>Content: </h3></td><td><p>{object.content}</p></td></tr>
 									<tr><td><h3>Full text: </h3></td><td><p>{object.full_text}</p></td></tr>
-									<tr><td><h3>Visibility	: </h3></td><td><p>{object.is_public ? 'public' : 'private'}</p></td></tr>
+									<tr><td><h3>Visibility: </h3></td><td><p>{object.is_public ? 'public' : 'private'}</p></td></tr>
 								</tbody>
 							</table>
 							<Button text="edit" onClick={() => { }} />
@@ -255,15 +255,13 @@ const Modal = ({ label, onClose, type, object, isEdit }) => {
 									<tr><td><h3>Price: </h3></td><td><p>{object.price === 0 ? 'free' : object.price}</p></td></tr>
 									<tr><td><h3>Multiplicity: </h3></td><td><p>{object.multiplicity === 0 ? 'unlimited' : object.multiplicity}</p></td></tr>
 									<tr><td><h3>Visibility: </h3></td><td><p>{object.is_public ? 'public' : 'private'}</p></td></tr>
-									<tr><td><h3>Owner: </h3></td><td><p>{object.owner.username}</p></td></tr>
-									<tr><td><h3>Buyers: </h3></td><td><ul>{object.buyers.map((buyer, key) => {
+									<tr><td><h3>Owner: </h3></td><td><p>{object.ownedr && object.owner.username}</p></td></tr>
+									<tr><td><h3>Buyers: </h3></td><td><ul>{object.buyers && object.buyers.map((buyer, key) => {
 										return <li>{buyer.username}</li>
 									})}</ul></td></tr>
 								</tbody>
 							</table>
 							<Button text="edit" onClick={() => { }} />
-							<Button text="buy" onClick={() => { }} />
-							<Button text="follow" onClick={() => { }} />
 						</div>
 					</div>
 				);

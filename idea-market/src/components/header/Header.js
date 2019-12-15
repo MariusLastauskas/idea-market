@@ -3,8 +3,10 @@ import Button from '../button/Button';
 import Logo from '../logo/Logo';
 import Menu from '../menu/Menu';
 import Modal from '../modal/Modal';
+import Image from '../image/Image';
 import { TYPE } from '../modal/constants';
 import { getCookie, deleteCookie, api, jwtDecode } from '../../utils';
+import hamburger from '../../imgs/hamburger.svg';
 import './header.scss';
 
 const Header = ({ onRouteChange }) => {
@@ -14,6 +16,7 @@ const Header = ({ onRouteChange }) => {
 
 	const [isLoggedIn, setIsLoggedIn] = useState(jwtToken);
 	const [isLogginModalOpen, setIsLogginModalOpen] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
 
 	jwtToken &&
 		api(`http://localhost:8080/user/${userData.id}`, 'GET').then(function (response) {
@@ -32,13 +35,16 @@ const Header = ({ onRouteChange }) => {
 
 	return (
 		<>
-			<div className={mainClass}>
+			<header className={mainClass}>
 				<div className={`${mainClass}__wrapper`}>
 					<Logo onRouteChange={onRouteChange} />
-					<Menu role={userData ? userData.role : -1} onRouteChange={onRouteChange} />
-					<Button text={isLoggedIn ? 'Log out' : 'Log in'} onClick={isLoggedIn ? logOut : openLogIn} />
+					<div className={`${mainClass}__container`}>
+						<Image className={`${mainClass}__hamburger`} src={hamburger} onClick={() => setMenuOpen(!menuOpen)} />
+						<Menu className={menuOpen ? '' : `${mainClass}--closed`} role={userData ? userData.role : -1} onRouteChange={onRouteChange} />
+						<Button className={menuOpen ? '' : `${mainClass}--closed`} text={isLoggedIn ? 'Log out' : 'Log in'} onClick={isLoggedIn ? logOut : openLogIn} />
+					</div>
 				</div>
-			</div>
+			</header>
 			{isLogginModalOpen && (
 				<Modal
 					onClose={() => {

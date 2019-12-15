@@ -1,6 +1,14 @@
 .header {
+    background: rgba(0,0,0,0.8);
     position: fixed;
     width: 100%;
+
+    &__hamburger {
+        cursor: pointer;
+        display: none;
+        height: 30px;
+        width: 30px;
+    }
 
     &__wrapper {
         display: flex;
@@ -8,5 +16,39 @@
         margin: auto;
         max-width: 1090px;
         padding: 8px;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .header {
+        &--closed {
+            display: none;
+        }
+        
+        &__container {
+            position: absolute;
+            right: 10px;
+            top: 9px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        &__hamburger {
+            display: block;
+            position: absolute;
+            right: 0;
+        }
+
+        &__wrapper {
+            display: block;
+
+            button {
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+                float: right;
+                margin-left: 0;
+                width: 150px;
+            }
+        }
     }
 }

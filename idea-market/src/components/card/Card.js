@@ -37,7 +37,7 @@ const Card = ({ title, image, description, price, multiplicity, buyers, owner, p
 					<span className={`${mainClassName}__email`}>{email}</span>
 				</div>
 			)}
-			{object === object && <Button text='more...' onClick={() => { setIsModalOpen(true) }} />}
+			{object !== undefined && <Button text='more...' onClick={() => { setIsModalOpen(true) }} />}
 			{isModalOpen && <Modal type={type} object={object} onClose={() => setIsModalOpen(false)} />}
 		</div>
 	);

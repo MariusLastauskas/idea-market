@@ -1,6 +1,14 @@
 .header {
+  background: rgba(0, 0, 0, 0.8);
   position: fixed;
   width: 100%;
+}
+
+.header__hamburger {
+  cursor: pointer;
+  display: none;
+  height: 30px;
+  width: 30px;
 }
 
 .header__wrapper {
@@ -9,4 +17,32 @@
   margin: auto;
   max-width: 1090px;
   padding: 8px;
+}
+
+@media screen and (max-width: 700px) {
+  .header--closed {
+    display: none;
+  }
+  .header__container {
+    position: absolute;
+    right: 10px;
+    top: 9px;
+    display: flex;
+    flex-direction: column;
+  }
+  .header__hamburger {
+    display: block;
+    position: absolute;
+    right: 0;
+  }
+  .header__wrapper {
+    display: block;
+  }
+  .header__wrapper button {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    float: right;
+    margin-left: 0;
+    width: 150px;
+  }
 }

@@ -1,5 +1,13 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
 .lander {
   overflow: hidden;
+  position: relative;
+  min-height: 100vh;
+  min-width: 320px;
 }
 
 .lander__container {
@@ -7,6 +15,7 @@
   max-width: 1074px;
   min-height: 460px;
   text-align: center;
+  margin-bottom: 230px;
 }
 
 .lander__container--centered {
@@ -30,4 +39,54 @@
   color: #fff;
   font-size: 48px;
   text-align: center;
+}
+
+.lander__slogon--animated {
+  animation-delay: 2s;
+  animation-duration: 2s;
+  animation-name: slideout--big;
+  animation-fill-mode: forwards;
+  height: 64px;
+  overflow: hidden;
+  display: inline-flex;
+  width: 0;
+}
+
+@keyframes slideout--big {
+  from {
+    width: 0;
+  }
+  to {
+    width: 750px;
+  }
+}
+
+@keyframes slideout--medium {
+  from {
+    width: 0;
+  }
+  to {
+    width: 370px;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .lander__slogon {
+    font-size: 24px;
+  }
+  .lander__slogon--animated {
+    animation-name: slideout--medium;
+    height: 32px;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .lander__slogon {
+    font-size: 16px;
+  }
+  .lander__slogon--animated {
+    animation-name: none;
+    height: 32px;
+    width: unset;
+  }
 }

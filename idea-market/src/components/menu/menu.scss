@@ -8,3 +8,17 @@
         display: inline-flex;
     }
 }
+
+@media screen and (max-width: 700px) {
+    .menu {
+        background: #fff;
+        display: block;
+        float: right;
+        margin-top: 40px;
+        width: 150px;
+
+        &__link {
+            display: block;
+        }
+    }
+}

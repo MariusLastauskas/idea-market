@@ -21,14 +21,18 @@
         display: block;
         font-weight: 600;
 
-        &--checkbox::before {
+        &--checkbox {
+            cursor: pointer;
+            
+            &::before {
             content: '';
-            border: 1px solid #000;
-            border-radius: 4px;
-            display: inline-block;
-            margin-right: 8px;
-            width: 10px;
-            height: 10px;
+                border: 1px solid #000;
+                border-radius: 4px;
+                display: inline-block;
+                margin-right: 8px;
+                width: 10px;
+                height: 10px;
+            }
         }
 
         &--checked::before {

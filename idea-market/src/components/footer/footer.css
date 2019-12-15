@@ -1,8 +1,41 @@
 .footer {
+  background-color: #000;
   color: white;
-  display: flex;
   justify-content: space-between;
   margin: auto;
-  max-width: 1090px;
   padding: 8px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  display: flex;
+}
+
+.footer__list {
+  list-style: none;
+  padding: 0;
+}
+
+.footer__section {
+  margin: 0 8px;
+}
+
+.footer a {
+  color: #ff2f2f;
+  margin-left: 2px;
+}
+
+.footer p {
+  margin: 0;
+}
+
+@media screen and (max-width: 1000px) {
+  .footer__title {
+    margin: 0;
+    font-size: 16px;
+  }
+  .footer__list-item {
+    font-size: 12px;
+  }
 }

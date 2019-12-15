@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Content from '../content/Content';
-import {ROUTE} from '../content/constants';
+import { ROUTE } from '../content/constants';
 import Footer from '../footer/Footer';
 import Header from '../header/Header';
 import Image from '../image/Image';
@@ -15,9 +15,9 @@ const Lander = () => {
         <div className="lander">
             <Header onRouteChange={setRoute} />
             <Image className="lander__image" src={LandingImage} />
-            <div className={`lander__container ${route === ROUTE.LANDING ? 'lander__container--centered' : ''}`}>
+            <main className={`lander__container ${route === ROUTE.LANDING ? 'lander__container--centered' : ''}`}>
                 <Content route={route} />
-            </div>
+            </main>
             <Footer />
         </div>
     );

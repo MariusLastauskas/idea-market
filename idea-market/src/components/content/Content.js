@@ -30,7 +30,7 @@ const Content = ({ route }) => {
     switch (route) {
         case ROUTE.LANDING:
             return (
-                <h1 className="lander__slogon">Find the idea you are looking for TODAY!!!</h1>
+                <h1 className="lander__slogon"><span className="lander__slogon--colored">TODAY!!! </span><span className="lander__slogon--animated">Find the idea you are looking for</span></h1>
             );
         case ROUTE.ARTICLE:
             {
@@ -139,7 +139,9 @@ const Content = ({ route }) => {
                                     role={myProfile.role}
                                     email={myProfile.email}
                                     title={myProfile.username}
-                                    description={`Full name: ${myProfile.full_name}`} />
+                                    description={`Full name: ${myProfile.full_name}`}
+                                    object={myProfile}
+                                    type={TYPE.USER_INFO} />
                             </li>
                         }
                     </ul>
@@ -153,6 +155,8 @@ const Content = ({ route }) => {
                                             <Card
                                                 title={article.title}
                                                 description={article.content}
+                                                object={article}
+                                                type={TYPE.ARTICLE_INFO}
                                             />
                                         </li>)
                                 })}
@@ -178,6 +182,8 @@ const Content = ({ route }) => {
                                         multiplicity={project.multiplicity}
                                         buyers={project.buyers}
                                         owner={project.owner}
+                                        object={project}
+                                        type={TYPE.PROJECT_INFO}
                                     />
                                 </li>)
                         })}
@@ -201,6 +207,8 @@ const Content = ({ route }) => {
                                         multiplicity={project.multiplicity}
                                         buyers={project.buyers}
                                         owner={project.owner}
+                                        object={project}
+                                        type={TYPE.PROJECT_INFO}
                                     />
                                 </li>)
                         })}
@@ -224,6 +232,8 @@ const Content = ({ route }) => {
                                         multiplicity={project.multiplicity}
                                         buyers={project.buyers}
                                         owner={project.owner}
+                                        object={project}
+                                        type={TYPE.PROJECT_INFO}
                                     />
                                 </li>)
                         })}

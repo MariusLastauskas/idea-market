@@ -16,7 +16,7 @@
   max-width: 600px;
   padding: 10px;
   position: absolute;
-  width: 100%;
+  width: 80%;
   z-index: 2;
   left: 0;
   right: 0;
@@ -51,4 +51,17 @@
   top: 0;
   width: 100vw;
   z-index: 1;
+}
+
+@media screen and (max-width: 700px) {
+  .modal__container h3 {
+    font-size: 16px;
+    margin: 0;
+  }
+  .modal__container td p {
+    font-size: 10px;
+  }
+  .modal__container ul {
+    font-size: 10px;
+  }
 }

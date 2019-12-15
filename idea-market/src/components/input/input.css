@@ -23,6 +23,10 @@
   font-weight: 600;
 }
 
+.input__label--checkbox {
+  cursor: pointer;
+}
+
 .input__label--checkbox::before {
   content: '';
   border: 1px solid #000;
