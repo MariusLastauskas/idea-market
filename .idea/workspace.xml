@@ -2,27 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b57e8a82-3e1b-492f-91c3-ccc31e0c18b1" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/idea-market/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/idea-market/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/idea-market/src/components/card/Card.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/card/Card.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/idea-market/src/components/card/card.css" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/card/card.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/idea-market/src/components/card/card.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/card/card.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/idea-market/src/components/card/card.scss" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/card/card.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/idea-market/src/components/content/Content.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/content/Content.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/idea-market/src/components/header/Header.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/header/Header.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/idea-market/src/components/lander/Lander.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/lander/Lander.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/idea-market/src/components/link/Link.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/link/Link.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/idea-market/src/components/logo/Logo.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/logo/Logo.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/idea-market/src/components/menu/Menu.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/menu/Menu.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/idea-market/src/components/modal/Modal.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/modal/Modal.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/idea-market/src/components/modal/modal.css" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/modal/modal.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/idea-market/src/components/modal/modal.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/modal/modal.min.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/idea-market/src/components/modal/modal.scss" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/components/modal/modal.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/idea-market/src/serviceWorker.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/serviceWorker.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/idea-market/src/utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/idea-market/src/utils.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/model/article.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/model/article.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/model/common.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/model/common.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/model/donation.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/model/donation.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/model/project.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/model/project.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/model/resource.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/model/resource.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/model/review.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/model/review.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/model/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/model/user.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

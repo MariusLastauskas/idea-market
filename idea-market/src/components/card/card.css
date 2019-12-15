@@ -6,8 +6,25 @@
   text-align: left;
 }
 
+.card--admin {
+  background: rgba(0, 255, 0, 0.7);
+}
+
+.card--blocked {
+  background: rgba(255, 47, 47, 0.7);
+}
+
+.card__avatar {
+  height: 44px;
+  width: 44px;
+}
+
 .card__description {
   margin: 0;
+}
+
+.card__email {
+  width: 300px;
 }
 
 .card__multiplicity {
