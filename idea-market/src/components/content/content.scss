@@ -1,13 +1,13 @@
 .content {
+    &__add-btn {
+        float: right;
+        margin-right: 16px;
+    }
+
     &__cards {
         list-style-type: none;
         padding: 0 16px;
-        // width: 200px;
     }
-
-    // &__cards-li {
-    //     display: inline-flex;
-    // }
 
     &__title {
         background: linear-gradient(90deg, white 0%, white 10%, #ff2f2f 100%);

@@ -1,3 +1,8 @@
+.content__add-btn {
+  float: right;
+  margin-right: 16px;
+}
+
 .content__cards {
   list-style-type: none;
   padding: 0 16px;

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ROUTE } from './constants';
 import Card from '../card/Card';
+import Button from '../button/Button';
+import { TYPE } from '../modal/constants';
 
 import { api, getCookie, jwtDecode } from '../../utils';
 import './content.scss';
@@ -11,6 +13,17 @@ const Content = ({ route }) => {
     const [users, setUsers] = useState(null);
     const [myProfile, setMyProfile] = useState(null);
     let mainClassName = 'content';
+
+    const jwtToken = getCookie('jwtToken');
+    const userData = jwtToken ? jwtDecode(atob(jwtToken)) : null;
+    {
+        !myProfile && userData &&
+            api(`http://localhost:8080/user/${userData.id}`, 'GET')
+                .then(response => {
+                    console.log(response.data)
+                    setMyProfile(response.data);
+                });
+    }
 
     switch (route) {
         case ROUTE.LANDING:
@@ -36,10 +49,13 @@ const Content = ({ route }) => {
                                     <Card
                                         title={article.title}
                                         description={article.content}
+                                        object={article}
+                                        type={TYPE.ARTICLE_INFO}
                                     />
                                 </li>)
                         })}
                     </ul>
+                    {myProfile && myProfile.role === 1 && <Button className={`${mainClassName}__add-btn`} text='New article' />}
                 </>
             );
         case ROUTE.PROJECT:
@@ -65,10 +81,13 @@ const Content = ({ route }) => {
                                         multiplicity={project.multiplicity}
                                         buyers={project.buyers}
                                         owner={project.owner}
+                                        object={project}
+                                        type={TYPE.PROJECT_INFO}
                                     />
                                 </li>)
                         })}
                     </ul>
+                    {myProfile && <Button className={`${mainClassName}__add-btn`} text='New project' />}
                 </>
             );
         case ROUTE.ADMIN:
@@ -94,6 +113,8 @@ const Content = ({ route }) => {
                                         email={user.email}
                                         title={user.username}
                                         description={`Full name: ${user.full_name}`}
+                                        object={user}
+                                        type={TYPE.USER_INFO}
                                     />
                                 </li>)
                         })}
@@ -101,17 +122,6 @@ const Content = ({ route }) => {
                 </>
             );
         case ROUTE.PROFILE:
-            const jwtToken = getCookie('jwtToken');
-            const userData = jwtToken ? jwtDecode(atob(jwtToken)) : null;
-            {
-                !myProfile &&
-                    api(`http://localhost:8080/user/${userData.id}`, 'GET')
-                        .then(response => {
-                            console.log(response.data)
-                            setMyProfile(response.data);
-                        });
-            }
-
             return (
                 <>
                     <h2 className={`${mainClassName}__title`}>My data</h2>
@@ -129,25 +139,29 @@ const Content = ({ route }) => {
                             </li>
                         }
                     </ul>
-                    <h2 className={`${mainClassName}__title`}>My articles</h2>
-                    <ul className={`${mainClassName}__cards`}>
-                        {myProfile && myProfile.articles.map((article, key) => {
-                            return (
-                                <li className={`${mainClassName}__cards-li`} key={article.id}>
-                                    <Card
-                                        title={article.title}
-                                        description={article.content}
-                                    />
-                                </li>)
-                        })}
-                        {myProfile && myProfile.articles.length === 0 &&
-                            <li className={`${mainClassName}__cards-li`} key={-1}>
-                                <Card
-                                    title={'none'}
-                                />
-                            </li>
-                        }
-                    </ul>
+                    {myProfile && myProfile.role === 1 &&
+                        <>
+                            <h2 className={`${mainClassName}__title`}>My articles</h2>
+                            <ul className={`${mainClassName}__cards`}>
+                                {myProfile && myProfile.articles.map((article, key) => {
+                                    return (
+                                        <li className={`${mainClassName}__cards-li`} key={article.id}>
+                                            <Card
+                                                title={article.title}
+                                                description={article.content}
+                                            />
+                                        </li>)
+                                })}
+                                {myProfile && myProfile.articles.length === 0 &&
+                                    <li className={`${mainClassName}__cards-li`} key={-1}>
+                                        <Card
+                                            title={'none'}
+                                        />
+                                    </li>
+                                }
+                            </ul>
+                        </>
+                    }
                     <h2 className={`${mainClassName}__title`}>My projects</h2>
                     <ul className={`${mainClassName}__cards`}>
                         {myProfile && myProfile.owned_projects.map((project, key) => {

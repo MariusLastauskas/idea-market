@@ -3,6 +3,7 @@ import Button from '../button/Button';
 import Logo from '../logo/Logo';
 import Menu from '../menu/Menu';
 import Modal from '../modal/Modal';
+import { TYPE } from '../modal/constants';
 import { getCookie, deleteCookie, api, jwtDecode } from '../../utils';
 import './header.scss';
 
@@ -11,11 +12,11 @@ const Header = ({ onRouteChange }) => {
 	const userData = jwtToken ? jwtDecode(atob(jwtToken)) : null;
 	const mainClass = 'header';
 
-	const [ isLoggedIn, setIsLoggedIn ] = useState(jwtToken);
-	const [ isLogginModalOpen, setIsLogginModalOpen ] = useState(false);
+	const [isLoggedIn, setIsLoggedIn] = useState(jwtToken);
+	const [isLogginModalOpen, setIsLogginModalOpen] = useState(false);
 
 	jwtToken &&
-		api(`http://localhost:8080/user/${userData.id}`, 'GET').then(function(response) {
+		api(`http://localhost:8080/user/${userData.id}`, 'GET').then(function (response) {
 			setIsLoggedIn(true);
 		});
 
@@ -30,11 +31,13 @@ const Header = ({ onRouteChange }) => {
 	};
 
 	return (
-		<div className={mainClass}>
-			<div className={`${mainClass}__wrapper`}>
-				<Logo onRouteChange={onRouteChange} />
-				<Menu role={userData ? userData.role : -1} onRouteChange={onRouteChange} />
-				<Button text={isLoggedIn ? 'Log out' : 'Log in'} onClick={isLoggedIn ? logOut : openLogIn} />
+		<>
+			<div className={mainClass}>
+				<div className={`${mainClass}__wrapper`}>
+					<Logo onRouteChange={onRouteChange} />
+					<Menu role={userData ? userData.role : -1} onRouteChange={onRouteChange} />
+					<Button text={isLoggedIn ? 'Log out' : 'Log in'} onClick={isLoggedIn ? logOut : openLogIn} />
+				</div>
 			</div>
 			{isLogginModalOpen && (
 				<Modal
@@ -42,9 +45,10 @@ const Header = ({ onRouteChange }) => {
 						setIsLogginModalOpen(false);
 					}}
 					label="Log in"
+					type={TYPE.LOGIN}
 				/>
 			)}
-		</div>
+		</>
 	);
 };
 

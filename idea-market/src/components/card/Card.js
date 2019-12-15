@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import Image from '../image/Image';
+import Modal from '../modal/Modal';
 import './card.scss';
+import Button from '../button/Button';
 
-const Card = ({ title, image, description, price, multiplicity, buyers, owner, picture, role, email, isBlocked }) => {
+const Card = ({ title, image, description, price, multiplicity, buyers, owner, picture, role, email, isBlocked, object, type }) => {
 	const mainClassName = 'card';
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	return (
 		<div
@@ -34,6 +37,8 @@ const Card = ({ title, image, description, price, multiplicity, buyers, owner, p
 					<span className={`${mainClassName}__email`}>{email}</span>
 				</div>
 			)}
+			{object === object && <Button text='more...' onClick={() => { setIsModalOpen(true) }} />}
+			{isModalOpen && <Modal type={type} object={object} onClose={() => setIsModalOpen(false)} />}
 		</div>
 	);
 };
