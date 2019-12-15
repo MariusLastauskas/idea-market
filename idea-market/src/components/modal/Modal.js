@@ -8,13 +8,20 @@ import './modal.scss';
 
 import { TYPE } from './constants';
 import { object } from 'prop-types';
+import Axios from 'axios';
 
-const Modal = ({ label, onClose, type, object }) => {
+const Modal = ({ label, onClose, type, object, isEdit }) => {
 	const mainClassName = 'modal';
 
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [errorMsg, setErrorMsg] = useState('');
+	const [title, setTitle] = useState('');
+	const [fullText, setFullText] = useState('');
+	const [summary, setSummary] = useState('');
+	const [isPublic, setIsPublic] = useState(false);
+	const [isLimited, setIsLimited] = useState(false);
+	const [quantity, setQuantity] = useState(0);
 
 	const logIn = () => {
 		addCookie('username', username);
@@ -25,8 +32,31 @@ const Modal = ({ label, onClose, type, object }) => {
 				addCookie('jwtToken', response.data);
 				window.location.reload();
 			})
-			.catch((errpr) => {
+			.catch((error) => {
 				setErrorMsg('Bad username or password');
+			});
+	};
+
+	const createArticle = () => {
+		// axios.post('http://localhost:8080/article', {
+
+		// })
+		// 	.then(function (response) {
+		// 		console.log(response);
+		// 	})
+		// 	.catch(function (error) {
+		// 		console.log(error);
+		// 	});
+		api('http://localhost:8080/article', 'POST',
+			{
+				"Title": title,
+				"Content": summary,
+				"Full_text": fullText,
+				"IsPublic": false
+			})
+			.then((response) => {
+				console.log(response);
+				window.location.reload();
 			});
 	};
 
@@ -63,46 +93,151 @@ const Modal = ({ label, onClose, type, object }) => {
 				</div>
 			);
 		case TYPE.ARTICLE_INFO:
-			return (
-				<div className={mainClassName}>
-					<div className={`${mainClassName}__container`}>
-						<Button className={`${mainClassName}__close`} text="x" onClick={onClose} />
-						<h2 className={`${mainClassName}__label`}>{object.title}</h2>
-						<table>
-							<tbody>
-								<tr><td><h3>Content: </h3></td><td><p>{object.content}</p></td></tr>
-								<tr><td><h3>Full text: </h3></td><td><p>{object.full_text}</p></td></tr>
-								<tr><td><h3>Visibility	: </h3></td><td><p>{object.is_public ? 'public' : 'private'}</p></td></tr>
-							</tbody>
-						</table>
-						<Button text="edit" onClick={() => { }} />
+			if (!isEdit) {
+				return (
+					<div className={mainClassName}>
+						<div className={`${mainClassName}__container`}>
+							<Button className={`${mainClassName}__close`} text="x" onClick={onClose} />
+							<h2 className={`${mainClassName}__label`}>{object.title}</h2>
+							<table>
+								<tbody>
+									<tr><td><h3>Content: </h3></td><td><p>{object.content}</p></td></tr>
+									<tr><td><h3>Full text: </h3></td><td><p>{object.full_text}</p></td></tr>
+									<tr><td><h3>Visibility	: </h3></td><td><p>{object.is_public ? 'public' : 'private'}</p></td></tr>
+								</tbody>
+							</table>
+							<Button text="edit" onClick={() => { }} />
+						</div>
 					</div>
-				</div>
-			);
+				);
+			} else {
+				return (
+					<div className={mainClassName}>
+						<div className={`${mainClassName}__container`}>
+							<Button className={`${mainClassName}__close`} text="x" onClick={onClose} />
+							<h2 className={`${mainClassName}__label`}>{label}</h2>
+							<Input
+								label="Title"
+								name="title"
+								placeholder="Enter title"
+								type="text"
+								value={title}
+								onChange={(e) => {
+									setTitle(e.target.value);
+								}}
+							/>
+							<Input
+								label="Summary"
+								name="content"
+								placeholder="Enter article summary"
+								type="textarea"
+								value={summary}
+								onChange={(e) => {
+									setSummary(e.target.value);
+								}}
+							/>
+							<Input
+								label="Full text"
+								name="full_text"
+								placeholder="Enter full text"
+								type="textarea"
+								value={fullText}
+								onChange={(e) => {
+									setFullText(e.target.value);
+								}}
+							/>
+							<p className={`${mainClassName}__error`}>{errorMsg}</p>
+							<Button text="Create article" onClick={createArticle} />
+						</div>
+					</div>
+				);
+			};
 		case TYPE.PROJECT_INFO:
-			return (
-				<div className={mainClassName}>
-					<div className={`${mainClassName}__container`}>
-						<Button className={`${mainClassName}__close`} text="x" onClick={onClose} />
-						<h2 className={`${mainClassName}__label`}>{object.name}</h2>
-						<table>
-							<tbody>
-								<tr><td><h3>description: </h3></td><td><p>{object.description}</p></td></tr>
-								<tr><td><h3>Price: </h3></td><td><p>{object.price}</p></td></tr>
-								<tr><td><h3>Multiplicity: </h3></td><td><p>{object.multiplicity === 0 ? 'free' : object.multiplicity}</p></td></tr>
-								<tr><td><h3>Visibility: </h3></td><td><p>{object.is_public ? 'public' : 'private'}</p></td></tr>
-								<tr><td><h3>Owner: </h3></td><td><p>{object.owner.username}</p></td></tr>
-								<tr><td><h3>Buyers: </h3></td><td><ul>{object.buyers.map((buyer, key) => {
-									return <li>{buyer.username}</li>
-								})}</ul></td></tr>
-							</tbody>
-						</table>
-						<Button text="edit" onClick={() => { }} />
-						<Button text="buy" onClick={() => { }} />
-						<Button text="follow" onClick={() => { }} />
+			if (!isEdit) {
+				return (
+					<div className={mainClassName}>
+						<div className={`${mainClassName}__container`}>
+							<Button className={`${mainClassName}__close`} text="x" onClick={onClose} />
+							<h2 className={`${mainClassName}__label`}>{object.name}</h2>
+							<table>
+								<tbody>
+									<tr><td><h3>description: </h3></td><td><p>{object.description}</p></td></tr>
+									<tr><td><h3>Price: </h3></td><td><p>{object.price}</p></td></tr>
+									<tr><td><h3>Multiplicity: </h3></td><td><p>{object.multiplicity === 0 ? 'free' : object.multiplicity}</p></td></tr>
+									<tr><td><h3>Visibility: </h3></td><td><p>{object.is_public ? 'public' : 'private'}</p></td></tr>
+									<tr><td><h3>Owner: </h3></td><td><p>{object.owner.username}</p></td></tr>
+									<tr><td><h3>Buyers: </h3></td><td><ul>{object.buyers.map((buyer, key) => {
+										return <li>{buyer.username}</li>
+									})}</ul></td></tr>
+								</tbody>
+							</table>
+							<Button text="edit" onClick={() => { }} />
+							<Button text="buy" onClick={() => { }} />
+							<Button text="follow" onClick={() => { }} />
+						</div>
 					</div>
-				</div>
-			);
+				);
+			} else {
+				return (
+					<div className={mainClassName}>
+						<div className={`${mainClassName}__container`}>
+							<Button className={`${mainClassName}__close`} text="x" onClick={onClose} />
+							<h2 className={`${mainClassName}__label`}>{label}</h2>
+							<Input
+								label="Name"
+								name="name"
+								placeholder="Enter name"
+								type="text"
+								value={title}
+								onChange={(e) => {
+									setTitle(e.target.value);
+								}}
+							/>
+							<Input
+								label="Description"
+								name="description"
+								placeholder="Enter description"
+								type="textarea"
+								value={summary}
+								onChange={(e) => {
+									setSummary(e.target.value);
+								}}
+							/>
+							<Input
+								label="Is public?"
+								name="isPublic"
+								placeholder=""
+								type="checkbox"
+								value={isPublic}
+								onChange={(e) => {
+									setIsPublic(!isPublic);
+								}}
+							/>
+							<Input
+								label="Is limited?"
+								name="isLimited"
+								placeholder=""
+								type="checkbox"
+								value={isLimited}
+								onChange={(e) => {
+									setIsLimited(!isLimited);
+								}}
+							/>
+							{isLimited &&
+								<Input
+									label="Quantity"
+									name="quantity"
+									placeholder="quantity"
+									type="number"
+									value={quantity}
+									onChange={(e) => {
+										setQuantity(e.target.value);
+									}}
+								/>
+							}
+						</div>
+					</div>);
+			}
 		case TYPE.USER_INFO:
 			console.log(object);
 			return (

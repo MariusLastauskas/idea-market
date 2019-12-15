@@ -6,12 +6,14 @@ import { TYPE } from '../modal/constants';
 
 import { api, getCookie, jwtDecode } from '../../utils';
 import './content.scss';
+import Modal from '../modal/Modal';
 
 const Content = ({ route }) => {
     const [articles, setArticles] = useState(null);
     const [projects, setProjects] = useState(null);
     const [users, setUsers] = useState(null);
     const [myProfile, setMyProfile] = useState(null);
+    const [isCreate, setIsCreate] = useState(false);
     let mainClassName = 'content';
 
     const jwtToken = getCookie('jwtToken');
@@ -55,7 +57,8 @@ const Content = ({ route }) => {
                                 </li>)
                         })}
                     </ul>
-                    {myProfile && myProfile.role === 1 && <Button className={`${mainClassName}__add-btn`} text='New article' />}
+                    {myProfile && myProfile.role === 1 && <Button className={`${mainClassName}__add-btn`} text='New article' onClick={() => setIsCreate(true)} />}
+                    {isCreate && <Modal type={TYPE.ARTICLE_INFO} isEdit={isCreate} onClose={() => setIsCreate(false)} />}
                 </>
             );
         case ROUTE.PROJECT:
@@ -87,7 +90,8 @@ const Content = ({ route }) => {
                                 </li>)
                         })}
                     </ul>
-                    {myProfile && <Button className={`${mainClassName}__add-btn`} text='New project' />}
+                    {myProfile && <Button className={`${mainClassName}__add-btn`} text='New project' onClick={() => setIsCreate(true)} />}
+                    {isCreate && <Modal type={TYPE.PROJECT_INFO} isEdit={isCreate} onClose={() => setIsCreate(false)} />}
                 </>
             );
         case ROUTE.ADMIN:

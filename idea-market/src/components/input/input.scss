@@ -8,12 +8,31 @@
         border-radius: 4px;
         box-sizing: border-box;
         padding: 4px;
-        width: 100%;
+        max-width: 100%;
+        min-width: 100%;
+
+        &[type="checkbox"] {
+            display: none;
+        }
     }
 
     &__label {
         color: #000;
         display: block;
         font-weight: 600;
+
+        &--checkbox::before {
+            content: '';
+            border: 1px solid #000;
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 8px;
+            width: 10px;
+            height: 10px;
+        }
+
+        &--checked::before {
+            background: #ff2f2f;
+        }
     }
 }

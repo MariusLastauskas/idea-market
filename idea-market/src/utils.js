@@ -16,11 +16,12 @@ export const addCookie = (name, value) => {
 	document.cookie = `${name}=${value}`;
 };
 
-export const api = (path, method) => {
+export const api = (path, method, data = null) => {
 	const options = {
 		url: path,
 		method: method,
-		withCredentials: true
+		withCredentials: true,
+		data
 	};
 
 	return axios(options);
